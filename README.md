@@ -1,2 +1,2 @@
 # Carnegie-Hall-App
-Repo for Test Carnegih Hall Shiny App
+Repo for Test Carnegie Hall Shiny App
