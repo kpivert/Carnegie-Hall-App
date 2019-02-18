@@ -1,12 +1,15 @@
 #' ---
 #' title: Useful SPARQL queries
-#' description: Each section builds a new table. Data will likely need to be pulled for specific Qs
+#' description: Each top-level section builds a new table. Data will likely need to be pulled for specific Qs
 #' author: nathancday@@gimal.com
 
 library(magrittr)
 library(tidyverse)
 
 # Map ----------------------------------------------------------
+
+# * SPARQL --------------------------------------------------------------
+
 # query is most frequent with birth details
 
 # PREFIX dbp: <http://dbpedia.org/ontology/>
@@ -32,9 +35,14 @@ dat <- RCurl::getURL("http://data.carnegiehall.org/sparql/select?query=PREFIX%20
   select(matches("value")) %>%
   rename_all(~ gsub("\\..*", "", .))
 
+# * GeoNames ---------------------------------------------------------------
+
 # Join in GeoNames data (webscraping didn't work)
 
-# Found this file with a lof of cities in it
+# Found a file dump with city codes
+# Picked the file with the bigest number
+# http://download.geonames.org/export/dump/
+
 geonames <- read.csv("data/cities15000.csv", header = F) %>%
   select(birthPlace = V1, city = V2, lat = V5, lon = V5)
 
@@ -43,7 +51,10 @@ dat %<>%
            as.numeric()) %>%
   inner_join(geonames) 
 
-saveRDS(dat, "data/birth_locations.RDS")
-
 dat %>%
   count(city, sort = T)
+
+# * Export ----------------------------------------------------------------
+
+# RDS for taday, maybe feather later
+saveRDS(dat, "data/birth_locations.RDS")
