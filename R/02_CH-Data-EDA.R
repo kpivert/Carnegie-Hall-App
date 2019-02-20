@@ -70,3 +70,20 @@ gcIntermediate(
   addTiles() %>% 
   addPolylines()
 
+
+leaflet() %>% 
+  addTiles() %>% 
+  addMarkers(
+    lng = dat %>% 
+      filter(name == "Lady Gaga") %>% 
+      select(lon) %>% 
+      pluck(lon), 
+    lat = dat %>% 
+      filter(name == "Lady Gaga") %>% 
+      select(lat), 
+    popup = dat %>% 
+      filter(name == "Lady Gaga") %>% 
+      select(city)
+  )
+
+
