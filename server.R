@@ -1,68 +1,36 @@
-#
-# This is the server logic of a Shiny web application. You can run the
-# application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
 
-library(shiny)
-library(tidyverse)
 library(feather)
+library(htmltools)
 library(leaflet)
 require(geosphere)
+library(shiny)
+library(tidyverse)
+
+options(shiny.launch.browser = TRUE)
+
 dat <- read_feather(here::here("data", "birth_locations.feather"))
 
 # Define server logic required to draw a map
 shinyServer(function(input, output) {
-
-    output$home_city <- renderPlot({
-        
-        m_lat <- dat %>% 
-            filter(name == input$names) %>% 
-            select(lat) %>% 
-            pluck("lat")
-        
-        m_long <- dat %>% 
-            filter(name == input$names) %>% 
-            select(lon) %>% 
-            pluck("lon")
-        
-        m_name <- dat %>% 
-            filter(name == input$names) %>% 
-            select(name) %>% 
-            pluck("name")
-        
-    # leaflet() %>%
-    #         addTiles() %>%  # Add default OpenStreetMap map tiles
-    #         addMarkers(
-    #             lng = dat %>% 
-    #                 filter(name == input$names) %>% 
-    #                 select(lon) %>% 
-    #                 pluck("lon"), 
-    #             lat = dat %>% 
-    #                 filter(name == input$names) %>% 
-    #                 select(lat) %>% 
-    #                 pluck("lat"), 
-    #             popup = dat %>% 
-    #                 filter(name == input$names) %>% 
-    #                 select(name) %>% 
-    #                 pluck("name")
-    #             )
-        
-        gcIntermediate(
-            c(m_long, m_lat), ## Budapest
-            c(-73.980276, 40.764881), ## Carenegie Hall
-            n = 150,
-            addStartEnd = TRUE, 
-            sp = TRUE
-        ) %>% 
-            leaflet() %>% 
-            addTiles() %>% 
-            addPolylines()
-        
-
-    })
-
+  
+  rv <- reactiveValues()
+  
+  observeEvent(input$names, {
+    rv$map_dat <- filter(dat, name %in% input$names) %>%
+      mutate(labl_html = paste(name, city, birthDate, sep = "<br/>"))
+    
+    rv$sp_lines <-  gcIntermediate(
+      rv$map_dat[c('lon', 'lat')], ## Budapest
+      c(-73.980276, 40.764881), ## Carenegie Hall
+      n = 150,
+      addStartEnd = TRUE, 
+      sp = TRUE )
+  })
+  
+  output$home_city <- renderLeaflet({
+    leaflet(rv$sp_lines) %>% 
+      addTiles() %>% 
+      addPolylines() %>%
+      addMarkers(data = rv$map_dat, label = ~HTML(labl_html))
+  })
 })

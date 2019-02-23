@@ -6,47 +6,16 @@
 
 # 00 Load Packages --------------------------------------------------------
 
-require(tidyverse)
 require(feather)
 require(leaflet)
 require(geosphere)
+require(tidyverse)
 
 # 01 Load Data ------------------------------------------------------------
 
-dat <- readRDS(
-  here::here("data", "birth_locations.RDS")
-  ) %>% 
-  select(-lon, - city)
+dat <- readRDS(here::here("data", "birth_locations.RDS"))
 
-geonames <- read_csv(
-  here::here("data", "cities15000.csv"),
-  col_names = FALSE
-  ) %>% 
-  select(
-    birthPlace = X1, 
-    city = X3, 
-    lat = X5, 
-    lon = X6
-    )
-
-# 02 Add Longitude to Dataset  --------------------------------------------
-
-dat <- dat %>% 
-  left_join(
-    ., 
-    geonames,
-    by = c("birthPlace" = "birthPlace")
-  ) %>% 
-  select(
-    birthPlace,
-    city,
-    performer,
-    name,
-    birthDate, 
-    lat, 
-    lon)
-
-saveRDS(dat, here::here("data", "birth_locations.RDS"))
+# save a feather
 write_feather(dat, here::here("data", "birth_locations.feather"))
 
 # 03 Leaflet POC ----------------------------------------------------------
@@ -56,6 +25,7 @@ m <- leaflet() %>%
   addMarkers(lng=-73.980276, lat=40.764881, popup="Carnegie Hall")
 m 
 
+## Build Spatial line object to based on traversing a great circle (arc)
 ## Code Stolen from 
 ## https://stackoverflow.com/questions/34499212/adding-curved-flight-path-using-rs-leaflet-package
 
@@ -65,25 +35,13 @@ gcIntermediate(
   n = 150,
   addStartEnd = TRUE, 
   sp = TRUE
-  ) %>% 
+  ) %>%
   leaflet() %>% 
   addTiles() %>% 
   addPolylines()
 
-
-leaflet() %>% 
+dat %>%
+  filter(name == "Lady Gaga") %>% 
+  leaflet(map_dat) %>% 
   addTiles() %>% 
-  addMarkers(
-    lng = dat %>% 
-      filter(name == "Lady Gaga") %>% 
-      select(lon) %>% 
-      pluck(lon), 
-    lat = dat %>% 
-      filter(name == "Lady Gaga") %>% 
-      select(lat), 
-    popup = dat %>% 
-      filter(name == "Lady Gaga") %>% 
-      select(city)
-  )
-
-
+  addMarkers(lng = ~lon, lat = ~lat, popup = ~city)

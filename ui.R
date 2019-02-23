@@ -1,17 +1,11 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
 
-library(shiny)
-library(tidyverse)
 library(feather)
+library(htmltools)
 library(leaflet)
 require(geosphere)
+library(shiny)
+library(tidyverse)
+
 dat <- read_feather(here::here("data", "birth_locations.feather"))
 
 
@@ -33,7 +27,7 @@ shinyUI(fluidPage(
 
         # Show a plot of the generated distribution
         mainPanel(
-            plotOutput("home_city")
+            leafletOutput("home_city")
         )
     )
 ))

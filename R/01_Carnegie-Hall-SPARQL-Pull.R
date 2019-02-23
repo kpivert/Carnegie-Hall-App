@@ -44,7 +44,7 @@ dat <- RCurl::getURL("http://data.carnegiehall.org/sparql/select?query=PREFIX%20
 # http://download.geonames.org/export/dump/
 
 geonames <- read.csv("data/cities15000.csv", header = F) %>%
-  select(birthPlace = V1, city = V2, lat = V5, lon = V5)
+  select(birthPlace = V1, city = V2, lat = V5, lon = V6)
 
 dat %<>%
   mutate(birthPlace = gsub(".*org/(\\d+)/", "\\1", birthPlace) %>%
