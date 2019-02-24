@@ -10,24 +10,35 @@ dat <- read_feather(here::here("data", "birth_locations.feather"))
 
 
 # Define UI for application that draws a histogram
-shinyUI(fluidPage(
+shinyUI(
+  fluidPage(
 
     # Application title
-    titlePanel("Carnegie Hall Performance Explorer"),
 
-    # Sidebar with a slider input for number of bins
-    sidebarLayout(
-        sidebarPanel(
-            selectizeInput(
-                inputId = "names",
-                label = "Performer",
-                choices = dat$name,
-                selected = NULL)
+
+
+
+    pageWithSidebar(
+      headerPanel("Carnegie Hall Performance Explorer"),
+      sidebarPanel(
+        selectizeInput(
+          inputId = "names",
+          label = "Performer",
+          choices = dat$name,
+          selected = NULL
         ),
+        dateInput(
+            inputId = "date",
+            label = "Performer Birth Date",
+            value = "YYYY-MM-DD"
 
-        # Show a plot of the generated distribution
-        mainPanel(
-            leafletOutput("home_city")
         )
+      ),
+
+      # Show a plot of the generated distribution
+      mainPanel(
+        plotOutput("home_city")
+      )
     )
-))
+  )
+)

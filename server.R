@@ -12,6 +12,7 @@ dat <- read_feather(here::here("data", "birth_locations.feather"))
 
 # Define server logic required to draw a map
 shinyServer(function(input, output) {
+
   
   rv <- reactiveValues()
   
@@ -33,4 +34,7 @@ shinyServer(function(input, output) {
       addPolylines() %>%
       addMarkers(data = rv$map_dat, label = ~HTML(labl_html))
   })
+
+
+   
 })
