@@ -1,34 +1,44 @@
-#
-# This is the user-interface definition of a Shiny web application. You can
-# run the application by clicking 'Run App' above.
-#
-# Find out more about building applications with Shiny here:
-#
-#    http://shiny.rstudio.com/
-#
 
+library(feather)
+library(htmltools)
+library(leaflet)
+require(geosphere)
 library(shiny)
+library(tidyverse)
+
+dat <- read_feather(here::here("data", "birth_locations.feather"))
+
 
 # Define UI for application that draws a histogram
-shinyUI(fluidPage(
+shinyUI(
+  fluidPage(
 
     # Application title
-    titlePanel("Carnegie Hall Perfomance Explorer"),
 
-    # Sidebar with a slider input for number of bins
-    sidebarLayout(
-        sidebarPanel(
-            sliderInput("bins",
-                        "Number of bins:",
-                        min = 1,
-                        max = 50,
-                        value = 30),
-            ?dateInput()
+
+
+
+    pageWithSidebar(
+      headerPanel("Carnegie Hall Performance Explorer"),
+      sidebarPanel(
+        selectizeInput(
+          inputId = "names",
+          label = "Performer",
+          choices = dat$name,
+          selected = NULL
         ),
+        dateInput(
+            inputId = "date",
+            label = "Performer Birth Date",
+            value = "YYYY-MM-DD"
 
-        # Show a plot of the generated distribution
-        mainPanel(
-            plotOutput("distPlot")
         )
+      ),
+
+      # Show a plot of the generated distribution
+      mainPanel(
+        leafletOutput("home_city")
+      )
     )
-))
+  )
+)
