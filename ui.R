@@ -37,7 +37,7 @@ shinyUI(
 
       # Show a plot of the generated distribution
       mainPanel(
-        plotOutput("home_city")
+        leafletOutput("home_city")
       )
     )
   )
