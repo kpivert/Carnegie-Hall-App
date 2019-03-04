@@ -7,34 +7,26 @@ library(shiny)
 library(tidyverse)
 
 dat <- read_feather(here::here("data", "birth_locations.feather"))
-
+m <- readRDS("data/continent_sf.RDS")
 
 # Define UI for application that draws a histogram
 shinyUI(
   fluidPage(
-
-    # Application title
-
-
-
-
     pageWithSidebar(
       headerPanel("Carnegie Hall Performance Explorer"),
       sidebarPanel(
         selectizeInput(
-          inputId = "names",
-          label = "Performer",
-          choices = dat$name,
-          selected = NULL
+          "names", "Performer:", dat$name
         ),
-        dateInput(
-            inputId = "date",
-            label = "Performer Birth Date",
-            value = "YYYY-MM-DD"
-
+        h5("Continent:"),
+        leafletOutput("selectmap", height = 200),
+        selectizeInput(
+          inputId = "continent",
+          label = NULL,
+          choices = m$region,
+          selected = NULL
         )
       ),
-
       # Show a plot of the generated distribution
       mainPanel(
         leafletOutput("home_city")

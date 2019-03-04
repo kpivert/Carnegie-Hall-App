@@ -9,11 +9,11 @@ library(tidyverse)
 options(shiny.launch.browser = TRUE)
 
 dat <- read_feather(here::here("data", "birth_locations.feather"))
+m <- readRDS("data/continent_sf.RDS")
 
 # Define server logic required to draw a map
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
 
-  
   rv <- reactiveValues()
   
   observeEvent(input$names, {
@@ -35,6 +35,43 @@ shinyServer(function(input, output) {
       addMarkers(data = rv$map_dat, label = ~HTML(labl_html))
   })
 
+  # Map selector ------------------------------------------------------------
+  
+  output$selectmap <- renderLeaflet({
+    pal <- colorFactor("Dark2", m$region)
+    
+    leaflet(m,
+            options = leafletOptions(
+              zoomControl = FALSE,
+              dragging = FALSE,
+              minZoom = 0,
+              maxZoom = 0)
+    )%>%
+      addPolygons(layerId = ~region,
+                  fillColor = ~pal(region),
+                  fillOpacity = 1,
+                  color = "black",
+                  stroke = F,
+                  highlight = highlightOptions(
+                    fillOpacity = .5,
+                    bringToFront = TRUE))
+  })
+  
+  observe({
+    click <- input$selectmap_shape_click
+    if (is.null(click)) return()
+    
+    updateSelectizeInput(session, "continent",
+                         selected = click$id)
+  })
+  
+  observeEvent(input$continent, {
+    leafletProxy("selectmap", session) %>%
+      removeShape("selected") %>% 
+      addPolylines(data = filter(m, region == input$continent),
+                   layerId = "selected",
+                   color = "black",
+                   weight = 3)
+  })
 
-   
 })
