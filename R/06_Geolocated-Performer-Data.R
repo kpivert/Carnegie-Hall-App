@@ -109,3 +109,67 @@ anti_join(ch_dat, dat, by = "performer")
 # * Save Feather File of Geolocated Performers  ---------------------------
 
 write_feather(dat, path = here::here("data", "geolocated_performers.feather"))
+
+
+# * Fix Missing Continent Data --------------------------------------------
+
+# * Reload Data -------------------------------------------------------------
+
+dat <- read_feather(
+  path = here::here("data", "geolocated_performers.feather")
+)
+
+# * Fix Missing Continent and Country Data --------------------------------
+
+## Step 1: Fix USSR 
+
+dat <- dat %>% 
+  mutate(ISO_Country = case_when(
+    birthPlace == 8354411 ~ "RU",
+    TRUE ~ ISO_Country
+  )
+  )
+
+## Step 2: Add ISO Continents 
+
+iso_data <- read_csv(
+  here::here("data", "country_continent.csv"), 
+  na = character()
+)
+
+dat <- dat %>% 
+  left_join(
+    ., 
+    iso_data, 
+    by = c("ISO_Country" = "iso 3166 country")
+  ) 
+
+## Step 2: Add Full Continent Names 
+
+cont_code <- tibble::tribble(
+  ~Code,           ~region,
+  "AF",        "Africa",
+  "NA", "North America",
+  "OC",       "Australia", ## NB: continent_sf uses Australia 
+  "AN",    "Antarctica",   ## instead of Oceania, but polygon
+  "AS",          "Asia",   ## is Oceania
+  "EU",        "Europe",
+  "SA", "South America"
+)
+
+dat <- dat %>% 
+  left_join(
+    .,
+    cont_code,
+    by = c("continent code" = "Code")
+  ) 
+
+## Step 3: Select Data and Rewrite Feather File
+
+dat <- dat %>% 
+  select(-Continent)
+
+write_feather(
+  dat, 
+  path = here::here("data", "geolocated_performers.feather")
+)
