@@ -26,7 +26,6 @@ ggplot(m, aes(fill = region)) +
 
 # Interactive ----------------------------------------------------------
 
-library(leaflet)
 
 pal <- colorFactor("Dark2", m$region)
 

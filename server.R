@@ -29,7 +29,7 @@ shinyServer(function(input, output, session) {
   # Map selector ------------------------------------------------------------
   
   output$selectmap <- renderLeaflet({
-    pal <- colorFactor("Dark2", m$region)
+    pal <- colorFactor(scales::hue_pal()(6), m$region)
     
     leaflet(m,
             options = leafletOptions(
@@ -37,7 +37,7 @@ shinyServer(function(input, output, session) {
               dragging = FALSE,
               minZoom = 0,
               maxZoom = 0)
-    )%>%
+    ) %>%
       addPolygons(layerId = ~region,
                   fillColor = ~pal(region),
                   fillOpacity = 1,
@@ -64,17 +64,28 @@ shinyServer(function(input, output, session) {
                    color = "black",
                    weight = 3)
     
-    rv$cont_dat <- filter(dat, region %in% input$continent) %>%
-        mutate(ch_lat = rep(40.764881, nrow(.))) %>%
-        mutate(ch_lon = rep(-73.980276, nrow(.)))
+    rv$cont_dat <- filter(dat, region %in% input$continent)
     
-
+    rv$cont_counts <-  rv$cont_dat %>%
+      mutate(ch_lat = rep(40.764881, nrow(.))) %>%
+      mutate(ch_lon = rep(-73.980276, nrow(.))) %>% 
+      count(lat, lon, ch_lat, ch_lon, sort = T)
+    
     rv$cont_arc_lines <-  gcIntermediate(
-      rv$cont_dat[c('lon', 'lat')],
-      rv$cont_dat[c('ch_lon', 'ch_lat')], ## Carnegie Hall Data Must Be Added to Feather File
-      n = 100,
+      rv$cont_counts[c('lon', 'lat')],
+      rv$cont_counts[c('ch_lon', 'ch_lat')], ## Carnegie Hall Data Must Be Added to Feather File
+      n = 50,
+      breakAtDateLine = T,
       addStartEnd = TRUE,
       sp = TRUE )
+    
+# 
+#     rv$cont_arc_lines <-  gcIntermediate(
+#       rv$cont_dat[c('lon', 'lat')],
+#       rv$cont_dat[c('ch_lon', 'ch_lat')], ## Carnegie Hall Data Must Be Added to Feather File
+#       n = 50,
+#       addStartEnd = TRUE,
+#       sp = TRUE )
     
     rv$instrument_counts <- rv$cont_dat %>%
       inner_join(instruments) %>%
@@ -86,9 +97,23 @@ shinyServer(function(input, output, session) {
   })
   
    output$continent_arcs <- renderLeaflet({
-     leaflet(rv$cont_arc_lines) %>%
-       addProviderTiles('CartoDB.Positron') %>%
-       addPolylines()
+     
+     alphas <- rv$cont_counts$n / max(rv$cont_counts$n)
+     
+     leaflet(rv$cont_arc_lines,
+             options = leafletOptions(
+               minZoom = 1,
+               maxZoom = 1)) %>%
+       addPolygons(data = m,
+                   layerId = ~region,
+                   fillColor = ~pal(region),
+                   fillOpacity = .5,
+                   color = ~pal(region),
+                   stroke = T
+       ) %>%
+       addPolylines(color = pal(input$continent),
+                    weight = log(rv$cont_counts$n),
+                    opacity = ifelse(alphas < .5, .5, alphas))
   })
 
   # Fluid Row Plots ---------------------------------------------------------
