@@ -1,24 +1,5 @@
 
-library(feather)
-library(packcircles)
-library(plotly)
-library(htmltools)
-library(leaflet)
-require(geosphere)
-library(shiny)
-library(tidyverse)
 source("src.R")
-
-dat <- read_feather(here::here("data", "geolocated_performers.feather"))
-
-## MUST FIX THIS IN ORIGINAL FEATHER FILE 
-# dat <- dat %>% 
-#   mutate(ch_lat = rep(40.764881, nrow(dat))) %>% 
-#   mutate(ch_lon = rep(-73.980276, nrow(dat)))
-
-m <- readRDS("data/continent_sf.RDS")
-instruments <- read_feather("data/name_instrument.feather")
-roles <- read_feather("data/name_role.feather")
 
 # Define server logic required to draw a map
 shinyServer(function(input, output, session) {

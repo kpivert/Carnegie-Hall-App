@@ -1,14 +1,5 @@
-library(feather)
-library(htmltools)
-library(leaflet)
-require(geosphere)
-library(shinydashboard)
-library(shiny)
-library(tidyverse)
 
-dat <- read_feather(here::here("data", "birth_locations.feather"))
-m <- readRDS("data/continent_sf.RDS")
-
+source("src.R")
 
 fluidPage(
   titlePanel("Carnegie Hall Performance Explorer"),
