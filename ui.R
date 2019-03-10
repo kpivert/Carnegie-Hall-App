@@ -16,7 +16,7 @@ shinyUI(
       headerPanel("Carnegie Hall Performance Explorer"),
       sidebarPanel(
         selectizeInput(
-          "names", "Performer:", dat$name
+          "names", "Performer:", sort(dat$name)
         ),
         h5("Continent:"),
         leafletOutput("selectmap", height = 200),
@@ -29,7 +29,8 @@ shinyUI(
       ),
       # Show a plot of the generated distribution
       mainPanel(
-        leafletOutput("home_city")
+      # leafletOutput("home_city")
+        leafletOutput("continent_arcs")
       )
     )
   )
