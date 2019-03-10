@@ -1,6 +1,6 @@
 # Shiny functions
 
-gg_circlepack <- function(dat, label, title) {
+gg_circlepack <- function(dat, label) {
   packing <- circleProgressiveLayout(dat$n, sizetype = "area")
   dat %<>% bind_cols(packing)
   layout <- circleLayoutVertices(packing, npoints = 50)
@@ -11,6 +11,5 @@ gg_circlepack <- function(dat, label, title) {
     scale_size_continuous(range = c(3,5)) +
     theme_void() +
     theme(legend.position = 'none') +
-    coord_equal() +
-    labs(title = title)
+    coord_equal()
 }

@@ -114,7 +114,7 @@ shinyServer(function(input, output, session) {
   
   output$instrument_bubble <- renderPlotly({
     dat <- rv$instrument_counts
-    p <- gg_circlepack(dat, "inst", "Instruments")
+    p <- gg_circlepack(dat, "inst")
     
     ggplotly(p, tooltip = c("label", "size")) %>%
       config(displayModeBar = F)
@@ -122,7 +122,7 @@ shinyServer(function(input, output, session) {
    
   output$role_bubble <- renderPlotly({
    dat <- rv$role_counts
-   p <- gg_circlepack(dat, "role", "Roles")
+   p <- gg_circlepack(dat, "role")
    
    ggplotly(p, tooltip = c("label", "size")) %>%
      config(displayModeBar = F)
