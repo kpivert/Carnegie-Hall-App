@@ -14,29 +14,27 @@ dashboardPage(
   dashboardHeader(title = "Carnegie Hall Performance Explorer"),
   dashboardSidebar(
     width = 350,
-    selectizeInput(
-      "names", "Performer:", dat$name
-    ),
-    h5("Continent:"),
-    leafletOutput("selectmap", height = 200),
-    selectizeInput(
-      inputId = "continent",
-      label = NULL,
-      choices = m$region,
-      selected = NULL
+    wellPanel(
+      h4("Continent:"),
+      leafletOutput("selectmap", height = 200),
+      selectizeInput(
+        inputId = "continent",
+        label = NULL,
+        choices = m$region,
+        selected = NULL
+      )
     )
   ),
   # Show a plot of the generated distribution
   dashboardBody(
     fluidRow(
-      leafletOutput("continent_arcs"),
-      leafletOutput("home_city")
+      leafletOutput("continent_arcs")
+      # leafletOutput("home_city")
     ),
+    br(),
     fluidRow(
-      box(plotOutput()),
-      box(plotOutput()),
-      box(plotOutput())
->>>>>>> Stashed changes
+      box(plotlyOutput("instrument_bubble")),
+      box(plotlyOutput("role_bubble"))
     )
   )
 )

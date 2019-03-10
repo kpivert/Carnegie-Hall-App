@@ -1,12 +1,13 @@
 
 library(feather)
+library(packcircles)
+library(plotly)
 library(htmltools)
 library(leaflet)
 require(geosphere)
 library(shiny)
 library(tidyverse)
-
-options(shiny.launch.browser = TRUE)
+source("src.R")
 
 dat <- read_feather(here::here("data", "geolocated_performers.feather"))
 
@@ -16,6 +17,8 @@ dat <- read_feather(here::here("data", "geolocated_performers.feather"))
 #   mutate(ch_lon = rep(-73.980276, nrow(dat)))
 
 m <- readRDS("data/continent_sf.RDS")
+instruments <- read_feather("data/name_instrument.feather")
+roles <- read_feather("data/name_role.feather")
 
 # Define server logic required to draw a map
 shinyServer(function(input, output, session) {
@@ -83,6 +86,7 @@ shinyServer(function(input, output, session) {
     rv$cont_dat <- filter(dat, region %in% input$continent) %>%
         mutate(ch_lat = rep(40.764881, nrow(.))) %>%
         mutate(ch_lon = rep(-73.980276, nrow(.)))
+    
 
     rv$cont_arc_lines <-  gcIntermediate(
       rv$cont_dat[c('lon', 'lat')],
@@ -91,23 +95,36 @@ shinyServer(function(input, output, session) {
       addStartEnd = TRUE,
       sp = TRUE )
     
-
+    rv$instrument_counts <- rv$cont_dat %>%
+      inner_join(instruments) %>%
+      count(inst, sort = T)
+    
+    rv$role_counts <- rv$cont_dat %>%
+      inner_join(roles) %>%
+      count(role, sort = T)
   })
-
-
-  #
+  
    output$continent_arcs <- renderLeaflet({
-     
      leaflet(rv$cont_arc_lines) %>%
        addProviderTiles('CartoDB.Positron') %>%
        addPolylines()
   })
-  
 
   # Fluid Row Plots ---------------------------------------------------------
   
-  
-
-  
-
- })
+  output$instrument_bubble <- renderPlotly({
+    dat <- rv$instrument_counts
+    p <- gg_circlepack(dat, "inst", "Instruments")
+    
+    ggplotly(p, tooltip = c("label", "size")) %>%
+      config(displayModeBar = F)
+  })
+   
+  output$role_bubble <- renderPlotly({
+   dat <- rv$role_counts
+   p <- gg_circlepack(dat, "role", "Roles")
+   
+   ggplotly(p, tooltip = c("label", "size")) %>%
+     config(displayModeBar = F)
+  })
+})
