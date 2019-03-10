@@ -104,10 +104,10 @@ shinyServer(function(input, output, session) {
              options = leafletOptions(
                minZoom = 1)
              ) %>%
-       addProviderTiles(
-         provider = "OpenStreetMap.BlackAndWhite",
-         options = providerTileOptions(noWrap = T)
-         ) %>% 
+       # addProviderTiles(
+       #   provider = "OpenStreetMap.BlackAndWhite",
+       #   options = providerTileOptions(noWrap = T)
+       #   ) %>% 
        addPolygons(data = m,
                    layerId = ~region,
                    fillColor = ~pal(region),
