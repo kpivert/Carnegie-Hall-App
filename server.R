@@ -102,15 +102,18 @@ shinyServer(function(input, output, session) {
      
      leaflet(rv$cont_arc_lines,
              options = leafletOptions(
-               minZoom = 1,
-               maxZoom = 1)) %>%
+               minZoom = 1)
+             ) %>%
+       addProviderTiles(
+         provider = "OpenStreetMap.BlackAndWhite",
+         options = providerTileOptions(noWrap = T)
+         ) %>% 
        addPolygons(data = m,
                    layerId = ~region,
                    fillColor = ~pal(region),
-                   fillOpacity = .5,
-                   color = ~pal(region),
-                   stroke = T
-       ) %>%
+                   fillOpacity = .2,
+                   color = ~pal(region)
+                   ) %>%
        addPolylines(color = pal(input$continent),
                     weight = log(rv$cont_counts$n),
                     opacity = ifelse(alphas < .5, .5, alphas))

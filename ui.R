@@ -3,7 +3,7 @@ source("src.R")
 
 fluidPage(
   tags$head(
-    tags$style(HTML(".leaflet-container { background: #fff; }"))
+    tags$style(HTML(".leaflet-container { background: #C6C6C6; }"))
   ),
   titlePanel("Carnegie Hall Performance Explorer"),
   sidebarLayout(
