@@ -1,16 +1,10 @@
-library(feather)
-library(htmltools)
-library(leaflet)
-require(geosphere)
-library(shinydashboard)
-library(shiny)
-library(tidyverse)
 
-dat <- read_feather(here::here("data", "birth_locations.feather"))
-m <- readRDS("data/continent_sf.RDS")
-
+source("src.R")
 
 fluidPage(
+  tags$head(
+    tags$style(HTML(".leaflet-container { background: #fff; }"))
+  ),
   titlePanel("Carnegie Hall Performance Explorer"),
   sidebarLayout(
     sidebarPanel(
@@ -28,8 +22,10 @@ fluidPage(
     # Show a plot of the generated distribution
     mainPanel(
       fluidRow(
-        leafletOutput("continent_arcs")
-        # leafletOutput("home_city")
+        column(width = 10, offset = 1,
+          leafletOutput("continent_arcs", height = 400)
+          # leafletOutput("home_city")
+        )
       ),
       br(),
       fluidRow(
