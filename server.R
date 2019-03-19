@@ -1,5 +1,6 @@
 
 source("src.R")
+pal <- colorFactor(scales::hue_pal()(6), m$region)
 
 # Define server logic required to draw a map
 shinyServer(function(input, output, session) {
@@ -29,7 +30,6 @@ shinyServer(function(input, output, session) {
   # Map selector ------------------------------------------------------------
   
   output$selectmap <- renderLeaflet({
-    pal <- colorFactor(scales::hue_pal()(6), m$region)
     
     leaflet(m,
             options = leafletOptions(
