@@ -6,6 +6,7 @@
 
 require(RCurl)
 require(jsonlite)
+require(feather)
 require(tidyverse)
 
 
@@ -113,6 +114,16 @@ inst %>%
   separate_rows(inst, sep = "\\|") %>%
   write_feather("data/name_instrument.feather")
 
+## 2019-03-27 Carnegie Hall Data Pull: Convert CSV to Feather
+
+inst <- read_csv(
+  here::here("data", "name_instrument_ch.csv")
+)
+
+write_feather(
+  inst,
+  here::here("data", "name_instrument.feather")
+)
 
 # 05 Roles grouped by name -----------------------------------------------
 
@@ -140,3 +151,15 @@ role %>%
   rename_all(~ gsub("\\.value", "", .)) %>%
   separate_rows(role, sep = "\\|") %>%
   write_feather("data/name_role.feather")
+
+
+## 2019-03-27 Carnegie Hall Data Pull: Convert CSV to Feather
+
+role <- read_csv(
+  here::here("data", "name_role_ch.csv")
+)
+
+write_feather(
+  role,
+  here::here("data", "name_role.feather")
+)
