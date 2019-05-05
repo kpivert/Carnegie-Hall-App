@@ -23,7 +23,7 @@ fluidPage(
     mainPanel(
       fluidRow(
         column(width = 10, offset = 1,
-          leafletOutput("continent_arcs", height = 400)
+          leafletOutput("arcs", height = 400)
           # leafletOutput("home_city")
         )
       ),
