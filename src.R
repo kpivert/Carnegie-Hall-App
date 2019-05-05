@@ -1,19 +1,19 @@
 # Library calls -----------------------------------------------------------
 
-# viz
-library(packcircles)
-library(plotly)
-library(leaflet)
-require(geosphere)
-
 # app
-library(feather)
 library(htmltools)
 library(shinydashboard)
 library(shiny)
 
-library(tidyverse)
+# viz
+library(packcircles)
+library(plotly)
+library(leaflet)
+library(sf)
+require(geosphere)
 
+library(feather) # prolly not needed
+library(tidyverse)
 
 # Data sets ---------------------------------------------------------------
 

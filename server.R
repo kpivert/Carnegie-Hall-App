@@ -19,13 +19,16 @@ shinyServer(function(input, output, session) {
       sp = TRUE )
   })
   
-  # output$home_city <- renderLeaflet({
-  #   leaflet(rv$sp_lines) %>%
-  #     addTiles() %>%
-  #     addPolylines() %>%
-  #     addMarkers(data = rv$map_dat, label = ~HTML(labl_html))
-  # })
+  # Arc map display set-up ------------------------------------------------------
   
+  output$arcs <- renderLeaflet({
+    leaflet(m) %>% 
+    addPolygons(layerId = ~region,
+                fillColor = ~pal(region),
+                fillOpacity = .2,
+                color = ~pal(region)
+    )
+  })
 
   # Map selector ------------------------------------------------------------
   
@@ -56,6 +59,8 @@ shinyServer(function(input, output, session) {
                          selected = click$id)
   })
   
+  # Respond to input --------------------------------------------------------
+
   observeEvent(input$continent, {
     leafletProxy("selectmap", session) %>%
       removeShape("selected") %>% 
@@ -79,14 +84,6 @@ shinyServer(function(input, output, session) {
       addStartEnd = TRUE,
       sp = TRUE )
     
-# 
-#     rv$cont_arc_lines <-  gcIntermediate(
-#       rv$cont_dat[c('lon', 'lat')],
-#       rv$cont_dat[c('ch_lon', 'ch_lat')], ## Carnegie Hall Data Must Be Added to Feather File
-#       n = 50,
-#       addStartEnd = TRUE,
-#       sp = TRUE )
-    
     rv$instrument_counts <- rv$cont_dat %>%
       inner_join(instruments) %>%
       count(inst, sort = T)
@@ -94,30 +91,51 @@ shinyServer(function(input, output, session) {
     rv$role_counts <- rv$cont_dat %>%
       inner_join(roles) %>%
       count(role, sort = T)
+    
+    # simulate a bounding box for zooming
+    # rv$bbox <- 
+    print(st_bbox(rv$cont_arc_lines))
+    
+    # a hack for over-plotting arcs (multiple performers same city)
+    alphas <- rv$cont_counts$n / max(rv$cont_counts$n)
+    
+    print(class(
+      st_as_sf(rv$cont_arc_lines)
+    ))
+    
+    leafletProxy("arcs", session, data = st_as_sf(rv$cont_arc_lines)) %>%
+      # must use 'group' not 'layerId'/removeShape()
+      clearGroup("lines") %>%
+       addPolylines(
+         group = "lines",
+         color = pal(input$continent),
+         weight = log(rv$cont_counts$n),
+         opacity = ifelse(alphas < .5, .5, alphas)
+         )
   })
   
-   output$continent_arcs <- renderLeaflet({
-     
-     alphas <- rv$cont_counts$n / max(rv$cont_counts$n)
-     
-     leaflet(rv$cont_arc_lines,
-             options = leafletOptions(
-               minZoom = 1)
-             ) %>%
-       # addProviderTiles(
-       #   provider = "OpenStreetMap.BlackAndWhite",
-       #   options = providerTileOptions(noWrap = T)
-       #   ) %>% 
-       addPolygons(data = m,
-                   layerId = ~region,
-                   fillColor = ~pal(region),
-                   fillOpacity = .2,
-                   color = ~pal(region)
-                   ) %>%
-       addPolylines(color = pal(input$continent),
-                    weight = log(rv$cont_counts$n),
-                    opacity = ifelse(alphas < .5, .5, alphas))
-  })
+  #  output$continent_arcs <- renderLeaflet({
+  #    
+  #    alphas <- rv$cont_counts$n / max(rv$cont_counts$n)
+  #    
+  #    leaflet(rv$cont_arc_lines,
+  #            # options = leafletOptions(
+  #            #   minZoom = 1)
+  #            ) %>%
+  #      # addProviderTiles(
+  #      #   provider = "OpenStreetMap.BlackAndWhite",
+  #      #   options = providerTileOptions(noWrap = T)
+  #      #   ) %>% 
+  #      # addPolygons(data = m,
+  #      #             layerId = ~region,
+  #      #             fillColor = ~pal(region),
+  #      #             fillOpacity = .2,
+  #      #             color = ~pal(region)
+  #      #             ) %>%
+  #      # addPolylines(color = pal(input$continent),
+  #      #              weight = log(rv$cont_counts$n),
+  #      #              opacity = ifelse(alphas < .5, .5, alphas))
+  # })
 
   # Fluid Row Plots ---------------------------------------------------------
   
