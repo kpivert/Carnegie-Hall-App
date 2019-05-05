@@ -19,7 +19,7 @@ shinyServer(function(input, output, session) {
       sp = TRUE )
   })
   
-  # Arc map display set-up ------------------------------------------------------
+  # Arc display ------------------------------------------------------------
   
   output$arcs <- renderLeaflet({
     leaflet(m) %>% 
@@ -93,17 +93,15 @@ shinyServer(function(input, output, session) {
       count(role, sort = T)
     
     # simulate a bounding box for zooming
-    # rv$bbox <- 
-    print(st_bbox(rv$cont_arc_lines))
-    
+    rv$bbox <- c(min(rv$cont_counts$lon),
+                 min(rv$cont_counts$lat),
+                 max(rv$cont_counts$lon),
+                 max(rv$cont_counts$lat))
+  
     # a hack for over-plotting arcs (multiple performers same city)
     alphas <- rv$cont_counts$n / max(rv$cont_counts$n)
     
-    print(class(
-      st_as_sf(rv$cont_arc_lines)
-    ))
-    
-    leafletProxy("arcs", session, data = st_as_sf(rv$cont_arc_lines)) %>%
+    leafletProxy("arcs", session, data = rv$cont_arc_lines) %>%
       # must use 'group' not 'layerId'/removeShape()
       clearGroup("lines") %>%
        addPolylines(
@@ -111,31 +109,13 @@ shinyServer(function(input, output, session) {
          color = pal(input$continent),
          weight = log(rv$cont_counts$n),
          opacity = ifelse(alphas < .5, .5, alphas)
-         )
+         ) %>%
+      # zoom to bounding box
+      fitBounds(lng1 = rv$bbox[1],
+                  lat1 = rv$bbox[2],
+                  lng2 = rv$bbox[3],
+                  lat2 = rv$bbox[4])
   })
-  
-  #  output$continent_arcs <- renderLeaflet({
-  #    
-  #    alphas <- rv$cont_counts$n / max(rv$cont_counts$n)
-  #    
-  #    leaflet(rv$cont_arc_lines,
-  #            # options = leafletOptions(
-  #            #   minZoom = 1)
-  #            ) %>%
-  #      # addProviderTiles(
-  #      #   provider = "OpenStreetMap.BlackAndWhite",
-  #      #   options = providerTileOptions(noWrap = T)
-  #      #   ) %>% 
-  #      # addPolygons(data = m,
-  #      #             layerId = ~region,
-  #      #             fillColor = ~pal(region),
-  #      #             fillOpacity = .2,
-  #      #             color = ~pal(region)
-  #      #             ) %>%
-  #      # addPolylines(color = pal(input$continent),
-  #      #              weight = log(rv$cont_counts$n),
-  #      #              opacity = ifelse(alphas < .5, .5, alphas))
-  # })
 
   # Fluid Row Plots ---------------------------------------------------------
   
