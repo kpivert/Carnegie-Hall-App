@@ -24,18 +24,20 @@ fluidPage(
       )
     ),
     # Show a plot of the generated distribution
-    
-     
-     
-     
-tabsetPanel(
-  tabPanel("tab 1", 
-           # mainPanel(
-      fluidRow(
-        column(width = 10, offset = 1,
-          leafletOutput("arcs", height = 400)
-          # leafletOutput("home_city")
-        )
+    mainPanel(
+      tabsetPanel(
+        tabPanel("tab 1", 
+         fluidRow(
+           column(width = 10, offset = 1,
+                  leafletOutput("arcs", height = 400))
+           )
+         ),
+        tabPanel("tab 2",
+           fluidRow(
+             column(width = 10, offset = 1,
+                    leafletOutput("choropleth", height = 400))
+           )
+         )
       ),
       br(),
       fluidRow(
@@ -44,21 +46,7 @@ tabsetPanel(
         box(plotlyOutput("role_bubble"),
             title = "Role")
       )
-    # )
-  ),
-  tabPanel("tab 2", 
-           mainPanel(
-             fluidRow(
-               column(width = 10, offset = 1,
-                      leafletOutput("choropleth", height = 400)
-                      
-               )
-             )
-           )
-  
-  
-)
-)
-)
+    )
+  )
 )
 
