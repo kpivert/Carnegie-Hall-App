@@ -17,7 +17,7 @@ library(tidyverse)
 
 # Data sets ---------------------------------------------------------------
 
-dat <- read_feather(here::here("data", "geolocated_performers.feather"))
+dat <- read_feather(here::here("data", "geolocated_performers_dt.feather"))
 
 ## MUST FIX THIS IN ORIGINAL FEATHER FILE 
 # dat <- dat %>% 

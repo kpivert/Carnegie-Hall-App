@@ -117,6 +117,18 @@ shinyServer(function(input, output, session) {
                   lat2 = rv$bbox[4])
   })
 
+  # Data Table --------------------------------------------------------------
+  
+  output$Table1 <- DT::renderDataTable({
+    dat %>% 
+      filter(region %in% input$continent) %>%
+      select(Name = name, Role = role, Country = ISO_Country, `Online Resource`)
+    
+    
+  },
+  escape = FALSE)
+  
+  
   # Fluid Row Plots ---------------------------------------------------------
   
   output$instrument_bubble <- renderPlotly({
@@ -135,3 +147,37 @@ shinyServer(function(input, output, session) {
      config(displayModeBar = F)
   })
 })
+
+
+
+# Choropleth --------------------------------------------------------------
+
+# # simulate a bounding box for zooming
+# rv$bbox <- c(min(rv$cont_counts$lon),
+#              min(rv$cont_counts$lat),
+#              max(rv$cont_counts$lon),
+#              max(rv$cont_counts$lat))
+
+dat_2 <- dat %>%
+  group_by(ISO_Country, region) %>%
+  count() %>%
+  select(
+    ISO_A2 = ISO_Country,
+    region,
+    Number = n
+  )
+
+dat_3 <- left_join(
+  world,
+  dat_2
+) %>%
+  mutate(
+    Number = if_else(is.na(Number), 0, as.double(Number)),
+    Hover = paste(NAME_EN, "Number of Performers: ", Number)
+  ) %>%
+  mutate(Hover = paste(NAME_EN, "Number of Performers: ", if_else(is.na(Number), 0, as.double(Number)))) %>% 
+  select(Number, Hover)
+
+  output$choropleth <- renderPlotly({
+    dat <- rv$
+  })

@@ -17,10 +17,20 @@ fluidPage(
           choices = m$region,
           selected = NULL
         )
+      ),
+      wellPanel(
+        "Table1",
+        DT::dataTableOutput("Table1")
       )
     ),
     # Show a plot of the generated distribution
-    mainPanel(
+    
+     
+     
+     
+tabsetPanel(
+  tabPanel("tab 1", 
+           # mainPanel(
       fluidRow(
         column(width = 10, offset = 1,
           leafletOutput("arcs", height = 400)
@@ -34,6 +44,21 @@ fluidPage(
         box(plotlyOutput("role_bubble"),
             title = "Role")
       )
-    )
-  )
+    # )
+  ),
+  tabPanel("tab 2", 
+           mainPanel(
+             fluidRow(
+               column(width = 10, offset = 1,
+                      leafletOutput("choropleth", height = 400)
+                      
+               )
+             )
+           )
+  
+  
 )
+)
+)
+)
+
