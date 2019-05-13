@@ -29,6 +29,21 @@ shinyServer(function(input, output, session) {
                 color = ~pal(region)
     )
   })
+  
+  
+# Choropleth Map ----------------------------------------------------------
+
+  ## Base Map
+  output$choropleth <- renderLeaflet({
+    leaflet(m) %>% 
+      addPolygons(
+        layerId = ~region,
+        fillColor = ~pal(region),
+        fillOpacity = 0,
+        color = ~pal(region)
+      )
+  })
+  
 
   # Map selector ------------------------------------------------------------
   
@@ -115,6 +130,7 @@ shinyServer(function(input, output, session) {
                   lat1 = rv$bbox[2],
                   lng2 = rv$bbox[3],
                   lat2 = rv$bbox[4])
+    
   })
 
   # Data Table --------------------------------------------------------------
@@ -146,38 +162,80 @@ shinyServer(function(input, output, session) {
    ggplotly(p, tooltip = c("label", "size")) %>%
      config(displayModeBar = F)
   })
-})
-
 
 
 # Choropleth --------------------------------------------------------------
 
-# # simulate a bounding box for zooming
-# rv$bbox <- c(min(rv$cont_counts$lon),
-#              min(rv$cont_counts$lat),
-#              max(rv$cont_counts$lon),
-#              max(rv$cont_counts$lat))
+ observeEvent(input$continent, {
+   
+   rv$cont_dat_1 <- filter(dat, region %in% input$continent)
 
-dat_2 <- dat %>%
-  group_by(ISO_Country, region) %>%
-  count() %>%
-  select(
-    ISO_A2 = ISO_Country,
-    region,
-    Number = n
-  )
+   ## 00: Subset Dataset, Make Counts and Hover Text
+   rv$choropleth_counts <- 
+     rv$cont_dat_1 %>%
+     group_by(ISO_Country, region) %>%
+     count() %>%
+     select(
+       ISO_A2 = ISO_Country,
+       region,
+       Number = n
+     ) %>%
+     ungroup() %>% 
+     left_join(
+       world,
+       .
+     ) %>% 
+     mutate(
+       Number = if_else(is.na(Number), 0, as.double(Number)),
+       Hover = paste(
+         NAME_EN,
+         "Number of Performers: ",
+         Number
+       )
+     ) %>% 
+     select(
+       region = CONTINENT, 
+       Number,
+       Hover, 
+       NAME_EN,
+       geometry
+     )
+     
+   
+   rv$cont_counts_1 <-  rv$cont_dat_1 %>%
+     count(lat, 
+           lon, 
+           sort = TRUE
+           ) 
 
-dat_3 <- left_join(
-  world,
-  dat_2
-) %>%
-  mutate(
-    Number = if_else(is.na(Number), 0, as.double(Number)),
-    Hover = paste(NAME_EN, "Number of Performers: ", Number)
-  ) %>%
-  mutate(Hover = paste(NAME_EN, "Number of Performers: ", if_else(is.na(Number), 0, as.double(Number)))) %>% 
-  select(Number, Hover)
+   ## 02: Nate's Alpha hack
 
-  output$choropleth <- renderPlotly({
-    dat <- rv$
-  })
+   alpha_choro <- rv$choropleth_counts$Number / max(rv$choropleth_counts$Number) * 10
+
+   ## 03: Nate's Bounding Box
+   
+   rv$bbox_1 <- c(min(rv$cont_counts_1$lon),
+                 min(rv$cont_counts_1$lat),
+                 max(rv$cont_counts_1$lon),
+                 max(rv$cont_counts_1$lat))
+
+   ## 04: Leaflet Proxy for Choropleth
+  
+  leafletProxy("choropleth", session, data = rv$choropleth_counts) %>%
+    # must use 'group' not 'layerId'/removeShape()
+    clearGroup("choro") %>%
+    addPolygons(
+      group = "choro",
+      color = pal(input$continent),
+      fillOpacity = alpha_choro, #if_else(alpha_choro < .001, .025, alpha_choro),
+      popup = ~Hover
+     )  %>%
+     # zoom to bounding box
+     fitBounds(lng1 = rv$bbox_1[1],
+               lat1 = rv$bbox_1[2],
+               lng2 = rv$bbox_1[3],
+               lat2 = rv$bbox_1[4])
+  
+})
+
+})

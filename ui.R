@@ -26,13 +26,13 @@ fluidPage(
     # Show a plot of the generated distribution
     mainPanel(
       tabsetPanel(
-        tabPanel("tab 1", 
+        tabPanel("Arcs", 
          fluidRow(
            column(width = 10, offset = 1,
                   leafletOutput("arcs", height = 400))
            )
          ),
-        tabPanel("tab 2",
+        tabPanel("Choropleth",
            fluidRow(
              column(width = 10, offset = 1,
                     leafletOutput("choropleth", height = 400))

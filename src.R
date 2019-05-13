@@ -27,6 +27,14 @@ dat <- read_feather(here::here("data", "geolocated_performers_dt.feather"))
 m <- readRDS("data/continent_sf.RDS")
 instruments <- read_feather("data/name_instrument.feather")
 roles <- read_feather("data/name_role.feather")
+world <- read_sf(
+  dsn = here::here("data", "gis"),
+  layer = "ne_110m_admin_0_countries"
+) %>%
+  mutate(
+    ISO_A2 = replace(ISO_A2, NAME == "France", "FR")
+  )
+
 
 
 # App functions -----------------------------------------------------------
