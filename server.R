@@ -188,7 +188,7 @@ shinyServer(function(input, output, session) {
     p <- gg_circlepack(dat, "inst")
     saveRDS(p, "~/Desktop/tst.RDS")
     
-    ggplotly(p, tooltip = c("label", "size")) %>%
+    ggplotly(p, tooltip = c("text")) %>%
       config(displayModeBar = F)
   })
    
@@ -196,7 +196,7 @@ shinyServer(function(input, output, session) {
    dat <- rv$role_counts
    p <- gg_circlepack(dat, "role")
    
-   ggplotly(p, tooltip = c("label", "size")) %>%
+   ggplotly(p, tooltip = c("text")) %>%
      config(displayModeBar = F)
   })
 

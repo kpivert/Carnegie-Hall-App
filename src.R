@@ -47,10 +47,12 @@ gg_circlepack <- function(dat, label) {
   layout <- circleLayoutVertices(packing, npoints = 50)
   
   dat <- bind_cols(dat, packing)
+  dat$text <- paste0(dat[[1]], " (", dat[["n"]], ")")
+  dat[[label]] <- if_else(dat[["n"]] < 5, "", dat[[label]])
   
   ggplot(dat, aes(x, y)) +
-    geom_polygon(data = layout, aes(fill = as.factor(id)), ) +
-    geom_text(data = dat, aes_(size = ~n, label = as.name(label))) +
+    geom_polygon(data = layout, aes(fill = as.factor(id))) +
+    geom_text(data = dat, aes_(size = ~n, label = as.name(label), text = ~text)) +
     scale_size_continuous(range = c(3,5)) +
     theme_void() +
     theme(legend.position = 'none') +
