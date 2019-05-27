@@ -25,6 +25,7 @@ dat <- read_feather(here::here("data", "geolocated_performers_dt.feather"))
 #   mutate(ch_lon = rep(-73.980276, nrow(dat)))
 
 m <- readRDS("data/continent_sf.RDS")
+countries <- readRDS("data/country_sf.RDS")
 instruments <- read_feather("data/name_instrument.feather")
 roles <- read_feather("data/name_role.feather")
 world <- read_sf(
@@ -39,6 +40,7 @@ world <- read_sf(
 
 # App functions -----------------------------------------------------------
 
+# a wrapper for ggplot_circlepack %>% ggplotly
 gg_circlepack <- function(dat, label) {
   packing <- circleProgressiveLayout(dat$n, sizetype = "area")
   layout <- circleLayoutVertices(packing, npoints = 50)
@@ -53,3 +55,13 @@ gg_circlepack <- function(dat, label) {
     theme(legend.position = 'none') +
     coord_equal()
 }
+
+# build a vector for leaflet::fitBounds
+fitBounds_bbox <- function(dat) {
+  x <- st_bbox(dat) %>% unname()
+  # meh but it's better
+  if ("Europe" %in% unique(dat$region)) x[1] <- -10; x[3] <- 100
+  x
+}
+
+
