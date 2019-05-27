@@ -19,8 +19,7 @@ fluidPage(
         )
       ),
       wellPanel(
-        "Table1",
-        DT::dataTableOutput("Table1")
+        DT::dataTableOutput("Table1", height = 580)
       )
     ),
     # Show a plot of the generated distribution

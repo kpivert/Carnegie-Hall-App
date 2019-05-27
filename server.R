@@ -103,9 +103,14 @@ shinyServer(function(input, output, session) {
       sp = TRUE ) %>% 
       st_as_sf() %>% 
       bind_cols(rv$loc_counts) %>% 
-      mutate(alpha = n / max(n), # deal with over-plotting arcs (multiple performers same city)
-             alpha = case_when(alpha < .5 ~ .5,
-                               TRUE ~ alpha))
+      mutate(thick = n / max(n) * 15,
+             thick = case_when(thick < 1 ~ 1,
+                               TRUE ~ thick),
+             alpha = n / max(n), # deal with over-plotting arcs (multiple performers same city)
+             alpha = case_when(alpha < .3 ~ .3,
+                               alpha > .6 ~ .6,
+                               TRUE ~ alpha)) %>% 
+      arrange(thick)
     
     # chloropleth data
     rv$country_dat <- rv$cont_dat %>% 
@@ -120,13 +125,15 @@ shinyServer(function(input, output, session) {
              label = paste0(name, ": ", n))
     
     rv$instrument_counts <- rv$cont_dat %>%
-      inner_join(instruments) %>%
+      left_join(instruments) %>%
+      replace_na(list(inst = "none")) %>%
       count(inst, sort = T)
     
     rv$role_counts <- rv$cont_dat %>%
-      inner_join(roles) %>%
+      left_join(roles) %>%
+      replace_na(list(role = "instrumentalist")) %>%
       count(role, sort = T)
-
+    
     # * update leaflets -------------------------------------------------------
 
     # a single bounding box for zooming (same on both maps)
@@ -139,7 +146,7 @@ shinyServer(function(input, output, session) {
          data = rv$loc_arc_lines,
          group = "lines",
          color = pal(input$continent),
-         weight = ~log(n),
+         weight = ~thick,
          opacity = ~alpha,
          label = ~label
          ) %>%
@@ -147,7 +154,6 @@ shinyServer(function(input, output, session) {
                 lat1 = bbox[2],
                 lng2 = bbox[3],
                 lat2 = bbox[4])
-    
     
     leafletProxy("choropleth", session, data = rv$country_dat) %>%
       clearGroup("choro") %>%
@@ -161,7 +167,6 @@ shinyServer(function(input, output, session) {
                 lat1 = bbox[2],
                 lng2 = bbox[3],
                 lat2 = bbox[4])
-    
   })
 
   # Data Table --------------------------------------------------------------
@@ -171,13 +176,17 @@ shinyServer(function(input, output, session) {
       filter(region %in% input$continent) %>%
       select(Name = name, Role = role, Country = ISO_Country, `Online Resource`)
   },
-  escape = FALSE)
+  options = list(paging = FALSE),
+  rownames = FALSE,
+  escape = FALSE,
+  fillContainer = TRUE)
   
   # Fluid Row Plots ---------------------------------------------------------
   
   output$instrument_bubble <- renderPlotly({
     dat <- rv$instrument_counts
     p <- gg_circlepack(dat, "inst")
+    saveRDS(p, "~/Desktop/tst.RDS")
     
     ggplotly(p, tooltip = c("label", "size")) %>%
       config(displayModeBar = F)

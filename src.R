@@ -4,6 +4,7 @@
 library(htmltools)
 library(shinydashboard)
 library(shiny)
+library(DT)
 
 # viz
 library(packcircles)
