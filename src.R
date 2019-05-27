@@ -44,15 +44,23 @@ world <- read_sf(
 # a wrapper for ggplot_circlepack %>% ggplotly
 gg_circlepack <- function(dat, label) {
   packing <- circleProgressiveLayout(dat$n, sizetype = "area")
-  layout <- circleLayoutVertices(packing, npoints = 50)
+  layout <- circleLayoutVertices(packing, npoints = 6)
   
   dat <- bind_cols(dat, packing)
   dat$text <- paste0(dat[[1]], " (", dat[["n"]], ")")
-  dat[[label]] <- if_else(dat[["n"]] < 5, "", dat[[label]])
+  co <- quantile(dat[["n"]], .95)
+  print(co)
+  print(100 < co)
+  dat[[label]] <- if_else(dat[["n"]] < co, "", dat[[label]])
   
-  ggplot(dat, aes(x, y)) +
-    geom_polygon(data = layout, aes(fill = as.factor(id))) +
-    geom_text(data = dat, aes_(size = ~n, label = as.name(label), text = ~text)) +
+  print(head(dat))
+  
+  kvm <- set_names(dat$text, 1:nrow(dat))
+  layout$text <- kvm[layout$id]
+  
+  ggplot(dat, aes(x, y, text = text)) +
+    geom_text(aes_(size = ~n, label = as.name(label))) +
+    geom_polygon(data = layout, aes(color = as.factor(id), fill = as.factor(id), text = text), size = 3, alpha = .5) +
     scale_size_continuous(range = c(3,5)) +
     theme_void() +
     theme(legend.position = 'none') +

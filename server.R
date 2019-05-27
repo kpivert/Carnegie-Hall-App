@@ -186,7 +186,6 @@ shinyServer(function(input, output, session) {
   output$instrument_bubble <- renderPlotly({
     dat <- rv$instrument_counts
     p <- gg_circlepack(dat, "inst")
-    saveRDS(p, "~/Desktop/tst.RDS")
     
     ggplotly(p, tooltip = c("text")) %>%
       config(displayModeBar = F)
