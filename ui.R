@@ -19,34 +19,40 @@ fluidPage(
         )
       ),
       wellPanel(
-        "Table1",
-        DT::dataTableOutput("Table1")
+        DT::dataTableOutput("Table1", height = 580)
       )
     ),
     # Show a plot of the generated distribution
     mainPanel(
-      tabsetPanel(
-        tabPanel("Arcs", 
-         fluidRow(
-           column(width = 10, offset = 1,
-                  leafletOutput("arcs", height = 400))
-           )
-         ),
-        tabPanel("Choropleth",
-           fluidRow(
-             column(width = 10, offset = 1,
-                    leafletOutput("choropleth", height = 400))
-           )
-         )
+      tabsetPanel(id = "main_tabs",
+        tabPanel(
+          "Choropleth",
+          fluidRow(
+            column(
+              width = 10, offset = 1,
+              leafletOutput("choropleth", height = 400)
+            )
+          )
+        ),
+        tabPanel(
+          "Arcs",
+          fluidRow(
+            column(
+              width = 10, offset = 1,
+              leafletOutput("arcs", height = 400)
+            )
+          )
+        )
       ),
       br(),
       fluidRow(
         box(plotlyOutput("instrument_bubble"),
-            title = "Instrument"),
+          title = "Instrument"
+        ),
         box(plotlyOutput("role_bubble"),
-            title = "Role")
+          title = "Role"
+        )
       )
     )
   )
 )
-

@@ -15,14 +15,14 @@ m <- st_as_sf(m) %>%
   select(region, name, iso_country = iso_a2)
 
 
-m_cont <- filter(m, !is.na(region)) %>% 
-  group_by(region) %>%
-  summarise(geometry = st_union(geometry)) %>%
-  filter(region != "Antarctica")
+m_country <- filter(m, !is.na(region)) %>% 
+  filter(region != "Antarctica") %>% 
+  group_by_at(vars(region:iso_country)) %>% 
+  summarise(geometry = st_union(geometry))
 
-saveRDS(m_cont, "data/continent_sf.RDS")
+saveRDS(m_country, "data/country_sf.RDS")
 
-ggplot(m_cont, aes(fill = region)) +
+ggplot(m_country, aes(fill = region)) +
   geom_sf() +
   scale_fill_brewer(palette = "Dark2") +
   coord_sf(datum = NULL) +
