@@ -5,6 +5,7 @@ library(htmltools)
 library(shinydashboard)
 library(shiny)
 library(DT)
+library(shinythemes)
 
 # viz
 library(packcircles)
@@ -12,7 +13,7 @@ library(plotly)
 library(leaflet)
 library(sf)
 require(geosphere)
-
+require(deckgl)
 library(feather) # prolly not needed
 library(tidyverse)
 
@@ -20,10 +21,36 @@ library(tidyverse)
 
 dat <- read_feather(here::here("data", "geolocated_performers_dt.feather"))
 
-## MUST FIX THIS IN ORIGINAL FEATHER FILE 
-# dat <- dat %>% 
-#   mutate(ch_lat = rep(40.764881, nrow(dat))) %>% 
-#   mutate(ch_lon = rep(-73.980276, nrow(dat)))
+
+# * Add Mapbox API Token for Session --------------------------------------
+
+Sys.setenv(MAPBOX_API_TOKEN = "your_super-secret_token")
+
+
+# Add Variables for DeckGL Vizes
+
+dat <- dat %>% 
+  mutate(
+    from_lon = lon,
+    from_lat = lat, 
+    from_name = birthPlaceName,
+    to_lon = ch_lon,
+    to_lat = ch_lat
+  ) %>% 
+  mutate(
+    to_name = "Carnegie Hall",
+    # to_name = rep("CH", nrow(.)),
+    tooltip = str_c(name, " Born in ", from_name),
+    ch_color = "#F7002B",
+    from_color = case_when(
+      `continent code` == "AF" ~ "#8F9DCB",
+      `continent code` == "AS" ~ "#DBA8AF",
+      `continent code` == "EU" ~ "#f9f6f7",
+      `continent code` == "NA" ~ "#1DA3CA",
+      `continent code` == "OC" ~ "#BF346B",
+      `continent code` == "SA" ~ "#767969"
+    )
+  )
 
 m <- readRDS("data/continent_sf.RDS")
 countries <- readRDS("data/country_sf.RDS")

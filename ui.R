@@ -1,58 +1,67 @@
 
 source("src.R")
 
-fluidPage(
-  tags$head(
-    tags$style(HTML(".leaflet-container { background: #fff; }"))
-  ),
-  titlePanel("Carnegie Hall Performance Explorer"),
-  sidebarLayout(
-    sidebarPanel(
-      wellPanel(
-        h4("Continent:"),
-        leafletOutput("selectmap", height = 200),
-        selectizeInput(
-          inputId = "continent",
-          label = NULL,
-          choices = m$region,
-          selected = NULL
+shinyUI(fluidPage(
+  theme = shinytheme("darkly"),
+  
+  # Application title
+  titlePanel("How did they get to Carnegie Hall?"),
+  
+  
+  # Show a plot of the generated distribution
+  mainPanel(
+    tabsetPanel(
+      tabPanel(
+        "Arcs",
+        deckglOutput(
+          "arc_map", 
+          width = "100%", 
+          height = "800px"
         )
       ),
-      wellPanel(
-        DT::dataTableOutput("Table1", height = 580)
-      )
-    ),
-    # Show a plot of the generated distribution
-    mainPanel(
-      tabsetPanel(id = "main_tabs",
-        tabPanel(
-          "Choropleth",
-          fluidRow(
-            column(
-              width = 10, offset = 1,
-              leafletOutput("choropleth", height = 400)
-            )
-          )
-        ),
-        tabPanel(
-          "Arcs",
-          fluidRow(
-            column(
-              width = 10, offset = 1,
-              leafletOutput("arcs", height = 400)
-            )
-          )
+      tabPanel(
+        "Scatter",
+        deckglOutput(
+          "scatter_map",
+          width = "100%",
+          height = "800px"
         )
       ),
-      br(),
-      fluidRow(
-        box(plotlyOutput("instrument_bubble"),
-          title = "Instrument"
-        ),
-        box(plotlyOutput("role_bubble"),
-          title = "Role"
+      tabPanel(
+        "Hex",
+        deckglOutput(
+          "hex_map",
+          width = "100%",
+          height = "800px"
+        )
+      ),
+      tabPanel(
+        "Filtered by Continent",
+        fluidRow(
+          column(
+            4,
+            wellPanel(
+              h4("Continent:"),
+              leafletOutput("selectmap", height = 200),
+              selectizeInput(
+                inputId = "continent",
+                label = NULL,
+                choices = m$region,
+                selected = NULL
+              )
+            )
+          ),
+          column(
+            8,
+            deckglOutput(
+              "filtered-map",
+              width = "auto",
+              height = "800px"
+            )
+          )
         )
       )
     )
   )
+)
 )
