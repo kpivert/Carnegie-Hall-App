@@ -96,20 +96,18 @@ shinyServer(function(input, output, session) {
   
   # initialize baseMap
   output$arcs <- renderMapdeck({
+    print(str(rv$cont_dat))
     
     mapdeck(
       token = key, 
-      style = 'mapbox://styles/mapbox/dark-v9',
-      location = c(-43.95988, -19.902739), 
-      zoom = 0
-    ) %>% 
+      style = mapdeck_style('dark')) %>%
       add_arc(
-        data = dat, 
-        layer_id = "arc_layer", 
-        origin = c("lon", "lat"), 
-        destination = c("ch_lon", "ch_lat"),
-        stroke_from = "from_color", 
-        stroke_to = "ch_color", 
+        data = as.data.frame(rv$cont_dat),
+        layer_id = "arc_layer3",
+        origin = c("from_lon", "from_lat"),
+        destination = c("to_lon", "to_lat"),
+        stroke_from = "from_color",
+        stroke_to = "ch_color",
         tooltip = "tooltip"
       )
     
@@ -136,8 +134,8 @@ shinyServer(function(input, output, session) {
     
     mapdeck(
       token = key, 
-      style = mapdeck_style("dark"),
-      pitch = 45
+      style = mapdeck_style("light"),
+      pitch = 10
     ) %>% 
       add_polygon(
         data = choro_dat,

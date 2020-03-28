@@ -5,6 +5,7 @@ library(htmltools)
 library(glue)
 library(shiny)
 library(DT)
+library(shinydashboard)
 library(shinythemes)
 library(sp)
 
@@ -23,7 +24,8 @@ library(tidyverse)
 # Data Sets ---------------------------------------------------------------
 
 # Geolocated Performers
-dat <- read_feather(here::here("data", "geolocated_performers_dt.feather"))
+dat <- read_feather(here::here("data", "geolocated_performers_dt.feather")) %>% 
+  mutate(birth_year = as.numeric(gsub("-.*", "", birthDate)))
 
 # Continent Shapefiles
 m <- readRDS("data/continent_sf.RDS") 
@@ -124,7 +126,7 @@ dat <- dat %>%
 
 centroids <- tibble(
   continent = c(
-    "Africa", "Asia", "Australia", "Europe", "North America", "South America"
+    "Africa", "Asia", "Europe", "North America", "Australia", "South America"
     ),
   lon = c(
     26.17, 87.331, 23.106111, -99.99611, 133.4166, -56.1004
@@ -136,7 +138,7 @@ centroids <- tibble(
 
 # * Key -------------------------------------------------------------------
 
-key <- "YOUR_MAPBOX_API"
+key <- Sys.getenv("MAPBOX_API_TOKEN")
 
 # App functions -----------------------------------------------------------
 
