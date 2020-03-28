@@ -2,7 +2,6 @@
 
 source("src.R")
 
-
 # * Continent Colors ------------------------------------------------------
 
 pal <- colorFactor(
@@ -16,385 +15,184 @@ pal <- colorFactor(
   m$region
 )
 
-
 # * Server  ---------------------------------------------------------------
 
 shinyServer(function(input, output, session) {
   
   rv <- reactiveValues()
+
+# Input Select Map --------------------------------------------------------
   
-# * Tab 1: Arc Map of Entire Dataset --------------------------------------
-
-  output$arc_map <- renderDeckgl({
-    
-    properties = list(
-      pickable = TRUE,
-      getStrokeWidth = 2,
-      cellSize = 200,
-      elevationScale = 4,
-      getSourcePosition = get_position("from_lat", "from_lon"),
-      getTargetPosition = get_position("to_lat", "to_lon"),
-      getTargetColor = get_color_to_rgb_array("ch_color"),
-      getSourceColor = get_color_to_rgb_array("from_color"),
-      getTooltip = get_property("tooltip")
-    )
-    
-    deckgl(
-      latitude = 40.7,
-      longitude = -74,
-      zoom = 2, 
-      pitch = 0
-    ) %>% 
-      add_mapbox_basemap(style = "mapbox://styles/mapbox/dark-v9") %>%   
-      add_arc_layer(
-        data = dat,
-        id = 'arc-layer',
-        properties = properties
-      )
-  })
-  
-
-# * Tab 2: Scatterplot ----------------------------------------------------
-  
-  output$scatter_map <- renderDeckgl({
-    
-    properties <- list(
-      getPosition = get_position("from_lat", "from_lon"),
-      getRadius = JS("data => Math.sqrt(data.exits)"),
-      radiusScale = 1000,
-      getColor = get_color_to_rgb_array("from_color"),
-      getTooltip = get_property("tooltip")
-    )
-    
-    deckgl(
-      latitude = 40.7,
-      longitude = -74,
-      zoom = 3, 
-      pitch = 0
-    ) %>% 
-      add_scatterplot_layer(
-        data = dat, 
-        properties = properties
-      ) %>% 
-      add_mapbox_basemap(style = "mapbox://styles/mapbox/dark-v9")
-    
-  })
-  
-
-# * Tab 3: Hex Map --------------------------------------------------------
-
-  output$hex_map <- renderDeckgl({
-    
-    properties <- list(
-      extruded = TRUE,
-      radius = 10000,
-      elevationScale = 4,
-      getPosition = get_position("from_lat", "from_lon"),
-      getTooltip = JS("object => `${object.centroid.join(', ')}<br/>Count: ${object.points.length}`"),
-      fixedTooltip = TRUE
-    )
-    
-    deckgl(
-      latitude = 40.7,
-      longitude = -74,
-      zoom = 2, 
-      pitch = 0
-    ) %>%
-      add_hexagon_layer(data = dat, properties = properties) %>%
-      add_mapbox_basemap(style = "mapbox://styles/mapbox/dark-v9")
-  })
-  
-
-# * Tab 4: Filtered by Continent ------------------------------------------
-
   # Input Map ---------------------------------------------
   
   output$selectmap <- renderLeaflet({
-    
-    leaflet(m,
-            options = leafletOptions(
-              zoomControl = FALSE,
-              dragging = FALSE,
-              minZoom = 0,
-              maxZoom = 0)
+
+    leaflet(
+      m,
+      options = leafletOptions(
+        zoomControl = FALSE,
+        dragging = FALSE,
+        minZoom = 0,
+        maxZoom = 0)
     ) %>%
-      addPolygons(layerId = ~region,
-                  fillColor = ~pal(region),
-                  fillOpacity = 1,
-                  color = "black",
-                  stroke = F,
-                  highlight = highlightOptions(
-                    fillOpacity = .5,
-                    bringToFront = TRUE))
+      addPolygons(
+        layerId = ~region,
+        fillColor = ~pal(region),
+        fillOpacity = 1,
+        color = "black",
+        stroke = F,
+        highlight = highlightOptions(
+          fillOpacity = .5,
+          bringToFront = TRUE)
+      )
   })
   
-  
   observe({
+    
     click <- input$selectmap_shape_click
     
     if (is.null(click)) return()
     
-    updateSelectizeInput(session, "continent",
-                         selected = click$id)
+    updateSelectizeInput(
+      session, 
+      "continent",
+      selected = click$id)
+    
   })
   
   # Respond to Input -------------------------------------------------
   
-  observeEvent(c(input$continent, input$main_tabs), {
-    print("triggered Observe")
-    leafletProxy("selectmap", session) %>%
-      removeShape("selected") %>% 
-      addPolylines(data = filter(m, region == input$continent),
-                   layerId = "selected",
-                   color = "black",
-                   weight = 3)
-    
-    
-    
-  })
-  
-  # Output DeckGL Continent Specific  -------------------------------
-  
-  
-  observeEvent(input$continent, {
-    
-    rv$map_dat <- filter(dat, region %in% input$continent) 
-    
-    output$`filtered-map` <- renderDeckgl({
+  observeEvent(
+    c(input$continent, input$main_tabs), {
+      print("triggered Observe")
+      leafletProxy("selectmap", session) %>%
+        removeShape("selected") %>% 
+        addPolylines(data = filter(m, region == input$continent),
+                     layerId = "selected",
+                     color = "black",
+                     weight = 3)
       
-      properties = list(
-        pickable = TRUE,
-        getStrokeWidth = 2,
-        cellSize = 200,
-        elevationScale = 4,
-        getSourcePosition = get_position("from_lat", "from_lon"),
-        getTargetPosition = get_position("to_lat", "to_lon"),
-        getTargetColor = get_color_to_rgb_array("ch_color"),
-        getSourceColor = get_color_to_rgb_array("from_color"),
-        getTooltip = get_property("tooltip")
-      )
+      # * data prep ----------------------------------------
       
-      deckgl(
-        # latitude = 40.7,
-        # longitude = -74,
-        latitude = 38,
-        longitude = -105,
-        # latitude = rv$map_dat$cont_lat,
-        # longitude = rv$map_dat$cont_lon,
-        zoom = 1,
-        pitch = 3
-      ) %>%
-        add_mapbox_basemap(style = "mapbox://styles/mapbox/dark-v9") %>%
-        add_arc_layer(
-          data = rv$map_dat,
-          id = 'arc-layer',
-          properties = properties
-        )
+      rv$cont_dat <- filter(dat, region %in% input$continent)
+      
+      rv$loc_counts <-  rv$cont_dat %>%
+        count(lat, lon, ch_lat, ch_lon, birthPlaceName, sort = T) %>% 
+        mutate(label = paste0(birthPlaceName, ": ", n))
+      
+      rv$instrument_counts <- rv$cont_dat %>%
+        left_join(instruments) %>%
+        replace_na(list(inst = "none")) %>%
+        count(inst, sort = T)
+      
+      rv$role_counts <- rv$cont_dat %>%
+        left_join(roles) %>%
+        replace_na(list(role = "instrumentalist")) %>%
+        count(role, sort = T)
+      
     })
+
+# * Tab 1: Arc Map --------------------------------------------------------
+  
+  # initialize baseMap
+  output$arcs <- renderMapdeck({
     
-    output$top_instruments <- renderPlot(
-      ggplot(
-        rv$map_dat %>% 
-          filter(!is.na(inst)) %>% 
-          count(inst) %>% 
-          arrange(desc(n)) %>% 
-          slice(1:10), 
-        aes(
-          x = reorder(inst, n),
-          y = n
-          # fill = rv$map_dat$from_color
-        )
-      ) +
-        geom_col(
-          width = .5,
-          fill = "#F7002B"
-        ) +
-        coord_flip() +
-        # theme_ft_rc()
-        theme_dark()
-    )
+    mapdeck(
+      token = key, 
+      style = 'mapbox://styles/mapbox/dark-v9',
+      location = c(-43.95988, -19.902739), 
+      zoom = 0
+    ) %>% 
+      add_arc(
+        data = dat, 
+        layer_id = "arc_layer", 
+        origin = c("lon", "lat"), 
+        destination = c("ch_lon", "ch_lat"),
+        stroke_from = "from_color", 
+        stroke_to = "ch_color", 
+        tooltip = "tooltip"
+      )
     
+  })
+  
+  observe({
+    
+    centroids_cont <- filter(centroids, continent == input$continent)
+    
+    mapdeck_update(map_id = "arcs") %>%
+      mapdeck_view(
+        location = c(centroids_cont$lon, centroids_cont$lat), 
+        zoom = 2, 
+        duration = 3000,
+        transition = "fly"
+      ) 
+    
+  })
+  
+# * Tab 2: Choropleth -----------------------------------------------------
+  
+  # initialize baseMap
+  output$choropleth <- renderMapdeck({
+    
+    mapdeck(
+      token = key, 
+      style = mapdeck_style("dark"),
+      pitch = 45
+    ) %>% 
+      add_polygon(
+        data = choro_dat,
+        layer = "polygon_layer",
+        fill_colour = "mapcolor13",
+        elevation = "n",
+        tooltip = "tooltip"
+      )
+    
+  })
+  
+  observe({
+    
+    centroids_cont <- filter(centroids, continent == input$continent)
+    
+    mapdeck_update(map_id = "choropleth") %>%
+      mapdeck_view(
+        location = c(centroids_cont$lon, centroids_cont$lat), 
+        zoom = 2, 
+        duration = 3000,
+        transition = "fly"
+      ) 
     
   })
 
-# * Tab 5: Detail Table ---------------------------------------------------
-
-  # output$table_1 <- DT::renderDataTable(DT::datatable({
-  #   data <- dat %>% 
-  #     select(
-  #       Name = name, 
-  #       `Birth Place` = birthPlaceName,
-  #       `Birth Date` = birthDate,
-  #       `Online Resource`,
-  #       Instruments = inst
-  #     )
-  #   if (input$performer != "All") {
-  #     data <- data[data$Name == input$performer, ]
-  #   } 
-  #   
-  #   # 
-  #   # if (input$role != "All") {
-  #   #   data <- data[data$role == input$role, ]
-  #   # }
-  #   # if (input$instrument != "All") {
-  #   #   data <- data[data$instrument == input$instrument, ]
-  #   # }
-  #   data  
-  #   }, 
-  #   options = list(
-  #     initComplete = JS(
-  #       "function(settings, json) {",
-  #       "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-  #       "}")
-  #   ),
-  #   rownames = FALSE,
-  #   escape = FALSE
-  #   # fillContainer = TRUE
-  # ))
+  # Data Table --------------------------------------------------------------
   
-  output$table_1 <- renderDT({
-    data <- dat %>% 
-      select(
-        Name = name, 
-        `Birth Place` = birthPlaceName,
-        `Birth Date` = birthDate,
-        `Online Resource`,
-        Instruments = inst, 
-        Role = role
-      )
-    if (input$performer != "All") {
-      data <- data[data$Name == input$performer, ]
-    } 
-    
-    # 
-    # if (input$role != "All") {
-    #   data <- data[data$role == input$role, ]
-    # }
-    # if (input$instrument != "All") {
-    #   data <- data[data$instrument == input$instrument, ]
-    # }
-    data  
-  }, 
-  options = list(
-    initComplete = JS(
-      "function(settings, json) {",
-      "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-      "}")
-  ),
+  output$Table1 <- DT::renderDataTable({
+    dat %>% 
+      filter(region %in% input$continent) %>%
+      select(Name = name, Role = role, Country = ISO_Country, `Online Resource`)
+  },
+  options = list(paging = FALSE),
   rownames = FALSE,
-  escape = FALSE
-  # fillContainer = TRUE
-  )
+  escape = FALSE,
+  fillContainer = TRUE)
   
+  # Fluid Row Plots ---------------------------------------------------------
 
-# * Tab 6: Filtered by Performer ------------------------------------------
-
-  observeEvent(input$name, {
-    
-    rv$name_dat <- filter(dat, name %in% input$name) 
-    
-    output$`name_map` <- renderDeckgl({
-      
-      properties = list(
-        pickable = TRUE,
-        getStrokeWidth = 2,
-        cellSize = 200,
-        elevationScale = 4,
-        getSourcePosition = get_position("from_lat", "from_lon"),
-        getTargetPosition = get_position("to_lat", "to_lon"),
-        getTargetColor = get_color_to_rgb_array("ch_color"),
-        getSourceColor = get_color_to_rgb_array("from_color"),
-        getTooltip = get_property("tooltip")
-      )
-      
-      deckgl(
-        # latitude = 40.7,
-        # longitude = -74,
-        latitude = rv$name_dat$from_lat,
-        longitude = rv$name_dat$from_lon,
-        zoom = 5,
-        pitch = 0
-      ) %>%
-        add_mapbox_basemap(style = "mapbox://styles/mapbox/dark-v9") %>%
-        add_arc_layer(
-          data = rv$name_dat,
-          id = 'arc-layer',
-          properties = properties
-        )
-    
+  output$time_hist <- renderPlot({
+    ggplot(rv$cont_dat, aes(birth_year)) +
+      geom_histogram(aes(fill = ..count..), show.legend = FALSE) + 
+      scale_x_continuous(limits = c(1800, NA)) +
+      theme_minimal(base_size = 18) +
+      labs(x = NULL, y = NULL)
   })
   
-  # output$text2 <- renderUI({
-  #     HTML(paste("hello", "world", sep="<br/>"))
-  #   })
-        
-  output$`performer-info` <- renderText({
-    
-      glue::glue("
-               
-               Birthplace: {rv$name_dat$birthPlaceName} 
-               
-               Birthdate: {rv$name_dat$birthDate} 
-               
-               Instrument(s): {rv$name_dat$inst} 
-               
-               Role: {rv$name_dat$role}
-               
-               ") 
-        
-    })
+  output$instrument_tree <- renderPlot({
+    ggTreemap(rv$instrument_counts, inst)
+  })
   
-  # output$`performer-info` <- renderText(
-  #   glue::glue("
-  #              
-  #              Birthplace: {rv$name_dat$birthPlaceName} \n
-  #              
-  #              Birthdate: {rv$name_dat$birthDate}
-  #              
-  #              Instrument(s): {rv$name_dat$inst} 
-  #              
-  #              Role: {rv$name_dat$role}
-  #              
-  #              ") 
-  # )
-  
-  performer_birth_place <- unique(rv$name_dat$birthPlaceName)
-  
-  output$`performer-birthplace` <- renderText(
-    glue::glue("
-               
-               Also from: {performer_birth_place}
-               
-               ")
-  )
-  
-  output$table_2 <- renderDT({
-    dat %>%
-      filter(
-        birthPlaceName %in% rv$name_dat$birthPlaceName,
-        name != rv$name_dat$name
-        ) %>%
-      distinct(name, .keep_all = TRUE) %>% 
-      select(
-        Name = name,
-        `Online Resource`,
-        Instruments = inst
-      )
-    },
-      filter = "none",
-    options = list(
-      dom = "t"
-      # initComplete = JS(
-      #   "function(settings, json) {",
-      #   "$(this.api().table().header()).css({'background-color': '#000', 'color': '#fff'});",
-      #   "}")
-      ),
-    rownames = FALSE,
-    escape = FALSE
-    # fillContainer = TRUE
-
-  )
+  output$role_tree <- renderPlot({
+    ggTreemap(rv$role_counts, role)
+  })
   
 })
   
-})
+  

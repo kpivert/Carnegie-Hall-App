@@ -1,42 +1,49 @@
-# Library calls -----------------------------------------------------------
+# Library Calls -----------------------------------------------------------
 
 # app
 library(htmltools)
 library(glue)
-library(shinydashboard)
 library(shiny)
 library(DT)
 library(shinythemes)
 library(sp)
 
 # viz
-library(packcircles)
-# library(hrbrthemes)
 library(plotly)
-library(leaflet)
+library(treemapify)
 library(sf)
-require(geosphere)
-require(deckgl)
+library(geosphere)
+library(rnaturalearth)
+library(rnaturalearthdata)
+library(mapdeck)
+library(leaflet)
 library(feather) # prolly not needed
 library(tidyverse)
 
-# Data sets ---------------------------------------------------------------
+# Data Sets ---------------------------------------------------------------
 
+# Geolocated Performers
 dat <- read_feather(here::here("data", "geolocated_performers_dt.feather"))
 
 # Continent Shapefiles
-m <- readRDS("data/continent_sf.RDS")
+m <- readRDS("data/continent_sf.RDS") 
 
 # Country Shapefiles
-countries <- readRDS("data/country_sf.RDS")
+world <- ne_countries(scale = "medium", returnclass = "sf")
 
-world <- read_sf(
-  dsn = here::here("data", "gis"),
-  layer = "ne_110m_admin_0_countries"
-) %>%
+# Counts for Choropleth  
+choro_dat <- dat %>% 
+  count(ISO_Country) %>%
+  mutate(n = n * 1000) %>% 
+  right_join(world, ., by = c("iso_a2" = "ISO_Country")) %>% 
   mutate(
-    ISO_A2 = replace(ISO_A2, NAME == "France", "FR")
-  )
+    tooltip = str_c(
+      formal_en, 
+      "\u2013",
+      n / 1000,
+      " Performers"
+    )
+  )  
 
 # Instrumental Performers Dataset
 instruments <- read_feather("data/name_instrument.feather")
@@ -45,7 +52,6 @@ instruments <- read_feather("data/name_instrument.feather")
 roles <- read_feather("data/name_role.feather")
 
 # Join Datasets for App Use
-
 dat <- left_join(
   dat, 
   instruments
@@ -54,10 +60,6 @@ dat <- left_join(
     inst = str_to_title(inst),
     role = str_to_title(role)
   )
-
-# * Add Mapbox API Token for Session --------------------------------------
-
-# Sys.setenv(MAPBOX_API_TOKEN = "your_super-secret_token")
 
 # * Add Variables for DeckGL Vizes and Tooltip ----------------------------
 
@@ -120,32 +122,29 @@ dat <- dat %>%
     )
   )
 
+centroids <- tibble(
+  continent = c(
+    "Africa", "Asia", "Australia", "Europe", "North America", "South America"
+    ),
+  lon = c(
+    26.17, 87.331, 23.106111, -99.99611, 133.4166, -56.1004
+  ),
+  lat = c(
+    5.65, 43.681, 53.5775, 48.367222222222225, -24.25, -15.6006
+  )
+)
+
+# * Key -------------------------------------------------------------------
+
+key <- "YOUR_MAPBOX_API"
+
 # App functions -----------------------------------------------------------
 
-# a wrapper for ggplot_circlepack %>% ggplotly
-gg_circlepack <- function(dat, label) {
-  packing <- circleProgressiveLayout(dat$n, sizetype = "area")
-  layout <- circleLayoutVertices(packing, npoints = 6)
-  
-  dat <- bind_cols(dat, packing)
-  dat$text <- paste0(dat[[1]], " (", dat[["n"]], ")")
-  co <- quantile(dat[["n"]], .95)
-  print(co)
-  print(100 < co)
-  dat[[label]] <- if_else(dat[["n"]] < co, "", dat[[label]])
-  
-  print(head(dat))
-  
-  kvm <- set_names(dat$text, 1:nrow(dat))
-  layout$text <- kvm[layout$id]
-  
-  ggplot(dat, aes(x, y, text = text)) +
-    geom_text(aes_(size = ~n, label = as.name(label))) +
-    geom_polygon(data = layout, aes(color = as.factor(id), fill = as.factor(id), text = text), size = 3, alpha = .5) +
-    scale_size_continuous(range = c(3,5)) +
-    theme_void() +
-    theme(legend.position = 'none') +
-    coord_equal()
+ggTreemap <- function(dat, label) {
+  ggplot(dat, aes(area = n, fill = n, label = {{label}})) +
+    geom_treemap() +
+    geom_treemap_text(color = "white") +
+    theme(legend.position = "none")
 }
 
 # build a vector for leaflet::fitBounds
@@ -155,3 +154,10 @@ fitBounds_bbox <- function(dat) {
   if ("Europe" %in% unique(dat$region)) x[1] <- -10; x[3] <- 100
   x
 }
+
+findCenter <- function(dat) {
+  x <- st_centroid(st_union(dat)) %>% unlist()
+  if ("Europe" %in% unique(dat$region)) x[1] <- 5
+  x
+}
+
