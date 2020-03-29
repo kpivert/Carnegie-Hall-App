@@ -33,7 +33,11 @@ shinyServer(function(input, output, session) {
           "<br>",
           "<p>This <a href = 'https://shiny.rstudio.com'>Shiny application</a>",
           "demonstrates how far each of the >8000 individual performers have traveled to grace",
-          "the stage at <a href = 'https://www.carnegiehall.org'>Carnegie Hall</a></p>"
+          "the stage at <a href = 'https://www.carnegiehall.org'>Carnegie Hall</a></p>",
+          "<br>",
+          "<p>Explore past performers by continent of birth, select a continent in the sidebar map.",
+          "Filter the sidebar datatable via the search bar to find a specific performer and click out,",
+          "to their Wikipedia page to learn more about their journey.</p>"
         ),
         easyClose = TRUE
     )
