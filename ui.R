@@ -13,27 +13,10 @@ fluidPage(
     ),
   HTML("<h1>How did they get to <span style='color:#F7002B; font-family:Neuton; font-size:140%'>Carnegie Hall</span>?</h1>"),
   h1("Practice, Practice, Practice"),
-  
-  # Possible content for modal dialog commented out
-  # HTML(
-  #   paste(
-  #     "<p>So goes <a href = 'https://www.carnegiehall.org/Blog/2016/04/The-Joke'>'The Joke'</a>",
-  #     "familiar to musicians across the world.",
-  #     "Attributed to multiple people, its definitive origin story remains a mystery.</p>"
-  #   )
-  # ),
-  # 
-  # HTML(
-  #   paste(
-  #     "<p>This <a href = 'https://shiny.rstudio.com'>Shiny application</a>",
-  #     "demonstrates how far each of the >8000 individual performers have traveled to grace",
-  #     "the stage at <a href = 'https://www.carnegiehall.org'>Carnegie Hall</a>"
-  #     
-  #   )
-  # ),
-  
+
   sidebarLayout(
     sidebarPanel(
+      actionButton("info_btn", "App Info", icon = icon("help")),
       wellPanel(
         h4("Continent:"),
         leafletOutput("selectmap", height = 200),
