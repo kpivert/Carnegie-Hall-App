@@ -1,21 +1,21 @@
 # Library Calls -----------------------------------------------------------
 
+# minimal function calls (not loaded entirely but individual function reqd)
+# library(geospheres)
+
 # app
+library(shiny)
 library(htmltools)
 library(glue)
-library(shiny)
 library(DT)
 library(shinydashboard)
 library(shinythemes)
-library(sp)
 
 # viz
 library(plotly)
 library(treemapify)
 library(sf)
-library(geosphere)
 library(rnaturalearth)
-library(rnaturalearthdata)
 library(mapdeck)
 library(leaflet)
 library(feather) # prolly not needed
@@ -78,7 +78,7 @@ dat <- dat %>%
 # Add Distances, Tooltip, and Continental Color Scheme  
 dat <- dat %>%   
   mutate(
-    distance_miles = distGeo(
+    distance_miles = geosphere::distGeo(
       dat %>% 
         select(starts_with("from_l")) %>% 
         as.matrix(),

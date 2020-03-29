@@ -20,6 +20,28 @@ pal <- colorFactor(
 shinyServer(function(input, output, session) {
   
   rv <- reactiveValues()
+  
+
+# Modal -------------------------------------------------------------------
+
+  modal_func <- function() {
+    modalDialog(
+        HTML(
+          "<p>So goes <a href = 'https://www.carnegiehall.org/Blog/2016/04/The-Joke'>'The Joke'</a>",
+          "familiar to musicians across the world.",
+          "Attributed to multiple people, its definitive origin story remains a mystery.",
+          "<br>",
+          "<p>This <a href = 'https://shiny.rstudio.com'>Shiny application</a>",
+          "demonstrates how far each of the >8000 individual performers have traveled to grace",
+          "the stage at <a href = 'https://www.carnegiehall.org'>Carnegie Hall</a></p>"
+        ),
+        easyClose = TRUE
+    )
+  }
+  
+  showModal(modal_func())
+ 
+  observeEvent(input$info_btn, { showModal(modal_func()) })
 
 # Input Select Map --------------------------------------------------------
   
@@ -110,7 +132,6 @@ shinyServer(function(input, output, session) {
         stroke_to = "ch_color",
         tooltip = "tooltip"
       )
-    
   })
   
   observe({
