@@ -12,7 +12,7 @@ fluidPage(
       )
     ),
   HTML("<h1>How did they get to <span style='color:#F7002B; font-family:Neuton; font-size:140%'>Carnegie Hall</span>?</h1>"),
-  h1("Practice, Practice, Practice"),
+  HTML("<h1>Practice, Practice, Practice</h1>"),
 
   sidebarLayout(
     sidebarPanel(
@@ -28,7 +28,7 @@ fluidPage(
         )
       ),
       wellPanel(
-        DT::dataTableOutput("Table1", height = 580)
+        DT::DTOutput("Table1", height = 580)
       )
     ),
     # Show a plot of the generated distribution

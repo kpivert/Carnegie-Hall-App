@@ -25,7 +25,56 @@ library(tidyverse)
 
 # Geolocated Performers
 dat <- read_feather(here::here("data", "geolocated_performers_dt.feather")) %>% 
-  mutate(birth_year = as.numeric(gsub("-.*", "", birthDate)))
+  mutate(birth_year = as.numeric(gsub("-.*", "", birthDate))) %>% 
+  mutate(
+    `Online Resource` = case_when(
+      str_detect(`Online Resource`, "\\'c\\(") == TRUE ~  
+        str_c(
+          "<a href = '",
+          str_extract(
+            `Online Resource`,
+            "(?<=c\\()(.*?)(?=,)"
+          ) %>% 
+            str_sub(2, -2), 
+          "' ",
+          str_extract(
+            `Online Resource`,
+            "target.+"
+          )
+        ),
+      TRUE ~ `Online Resource`
+    )
+  ) %>% 
+  mutate(
+    `Online Resource` = case_when(
+      str_detect(`Online Resource`, "^https://id.loc.gov") == TRUE ~ 
+        str_c(
+          "<a href ='",
+          `Online Resource`,
+          "' target='_blank'>Library of Congress</a>" 
+        ),
+      TRUE ~ `Online Resource`
+    )
+  ) %>% 
+  mutate(
+    `Online Resource` = case_when(
+      name == "Dave Samuels" ~ "http://dbpedia.org/resource/Dave_Samuels",
+      name == "Shirley Verrett" ~ "http://dbpedia.org/resource/Shirley_Verrett",
+      TRUE ~ `Online Resource`
+    )
+  ) %>% 
+  mutate(
+    `Online Resource` = case_when(
+      str_detect(`Online Resource`, "dbpedia.org/") == TRUE ~
+        str_c(
+          "<a href ='",
+          `Online Resource`,
+          "' target='_blank'>DBPedia</a>" 
+        ),
+      TRUE ~ `Online Resource`
+    )
+  )
+  
 
 # Continent Shapefiles
 m <- readRDS("data/continent_sf.RDS") 

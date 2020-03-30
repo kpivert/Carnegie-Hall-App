@@ -33,11 +33,12 @@ shinyServer(function(input, output, session) {
           "<br>",
           "<p>This <a href = 'https://shiny.rstudio.com'>Shiny application</a>",
           "demonstrates how far each of the >8000 individual performers have traveled to grace",
-          "the stage at <a href = 'https://www.carnegiehall.org'>Carnegie Hall</a></p>",
+          "the stage at <a href = 'https://www.carnegiehall.org'>Carnegie Hall</a>.</p>",
           "<br>",
-          "<p>Explore past performers by continent of birth, select a continent in the sidebar map.",
-          "Filter the sidebar datatable via the search bar to find a specific performer and click out,",
-          "to their Wikipedia page to learn more about their journey.</p>"
+          "<p>Using data from the <a href = 'https://github.com/CarnegieHall/linked-data'>Carnegie Hall Database</a>", 
+          "you can explore past performers by their continent of birth by clicking in the sidebar map.",
+          "Search the sidebar table to find a specific performer and click on",
+          "available Online Resources to learn more about their journey.</p>"
         ),
         easyClose = TRUE
     )
@@ -128,7 +129,8 @@ shinyServer(function(input, output, session) {
       token = key, 
       style = mapdeck_style('dark')) %>%
       add_arc(
-        data = as.data.frame(rv$cont_dat),
+        # data = as.data.frame(rv$cont_dat),
+        data = dat,
         layer_id = "arc_layer3",
         origin = c("from_lon", "from_lat"),
         destination = c("to_lon", "to_lat"),
@@ -160,7 +162,7 @@ shinyServer(function(input, output, session) {
     mapdeck(
       token = key, 
       style = mapdeck_style("light"),
-      pitch = 10
+      pitch = 20
     ) %>% 
       add_polygon(
         data = choro_dat,
@@ -188,15 +190,41 @@ shinyServer(function(input, output, session) {
 
   # Data Table --------------------------------------------------------------
   
-  output$Table1 <- DT::renderDataTable({
+  output$Table1 <- DT::renderDT({
     dat %>% 
-      filter(region %in% input$continent) %>%
-      select(Name = name, Role = role, Country = ISO_Country, `Online Resource`)
-  },
-  options = list(paging = FALSE),
-  rownames = FALSE,
-  escape = FALSE,
-  fillContainer = TRUE)
+      filter(region %in% input$continent) %>% 
+      distinct(name, .keep_all = TRUE) %>% 
+      select(Name = name, Country = ISO_Country, `Online Resource`) %>% 
+      datatable(
+        options = list(
+          paging = FALSE
+          ),
+        rownames = FALSE,
+        escape = FALSE,
+        fillContainer = TRUE
+        ) %>% 
+      formatStyle(
+        color = "#000000",
+        columns = c("Name", "Country")
+        ) %>% 
+      formatStyle(
+        color = "#F7002B",
+        columns = "Online Resource"
+      )
+  })
+  
+  # output$Table1 <- DT::renderDataTable({
+  #   dat %>% 
+  #     filter(region %in% input$continent) %>%
+  #     select(Name = name, Role = role, Country = ISO_Country, `Online Resource`)
+  # },
+  # options = list(
+  #   paging = FALSE,
+  #   color = "red",
+  #   backgroundColor = "black"),
+  # rownames = FALSE,
+  # escape = FALSE,
+  # fillContainer = TRUE)
   
   # Fluid Row Plots ---------------------------------------------------------
 
