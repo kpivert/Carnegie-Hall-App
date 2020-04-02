@@ -12,7 +12,6 @@ library(shinythemes)
 
 # viz
 library(plotly)
-library(treemapify)
 library(mapdeck)
 library(leaflet)
 library(tidyverse)
