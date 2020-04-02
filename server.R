@@ -228,20 +228,22 @@ shinyServer(function(input, output, session) {
   
   # Fluid Row Plots ---------------------------------------------------------
 
-  output$time_hist <- renderPlot({
-    ggplot(rv$cont_dat, aes(birth_year)) +
+  output$time_hist <- renderPlotly({
+    p <- ggplot(rv$cont_dat, aes(birth_year)) +
       geom_histogram(aes(fill = ..count..), show.legend = FALSE) + 
       scale_x_continuous(limits = c(1800, NA)) +
       theme_minimal(base_size = 18) +
       labs(x = NULL, y = NULL)
+    ggplotly(p) %>% 
+      config(displayModeBar = F)
   })
   
-  output$instrument_tree <- renderPlot({
-    ggTreemap(rv$instrument_counts, inst)
+  output$instrument_tree <- renderPlotly({
+    d3Treemap(rv$instrument_counts, "inst")
   })
   
-  output$role_tree <- renderPlot({
-    ggTreemap(rv$role_counts, role)
+  output$role_tree <- renderPlotly({
+    d3Treemap(rv$role_counts, "role")
   })
   
 })

@@ -64,6 +64,21 @@ ggTreemap <- function(dat, label) {
     theme(legend.position = "none")
 }
 
+d3Treemap <- function(dat, label) {
+  plot_ly(data = dat,
+          type='treemap',
+          labels= dat[[label]],
+          parents="",
+          values= ~n,
+          color = ~n,
+          colors = "Blues",
+          textinfo="label",
+          showscale=FALSE) %>% 
+    layout(uniformtext=list(minsize=16, mode='hide')) %>% 
+    config(displayModeBar = F) %>% 
+    hide_colorbar()
+}
+
 # build a vector for leaflet::fitBounds
 fitBounds_bbox <- function(dat) {
   x <- st_bbox(dat) %>% unname()

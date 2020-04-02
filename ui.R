@@ -60,15 +60,15 @@ fluidPage(
       fluidRow(
         box(
           title = "Instrument", width = 4,
-          plotOutput("instrument_tree", height = 200)
+          plotlyOutput("instrument_tree", height = 200)
           ),
         box(
           title = "Birth year", width = 4,
-          plotOutput("time_hist", height = 200)
+          plotlyOutput("time_hist", height = 200)
           ),
         box(
           title = "Role", width = 4,
-          plotOutput("role_tree", height = 200)
+          plotlyOutput("role_tree", height = 200)
         )
       )
     )
