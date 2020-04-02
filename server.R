@@ -234,7 +234,7 @@ shinyServer(function(input, output, session) {
       scale_x_continuous(limits = c(1800, NA)) +
       theme_minimal() +
       labs(x = NULL, y = NULL)
-    ggplotly(p) %>% 
+    ggplotly(p, tooltip = c("fill", "x")) %>% 
       config(displayModeBar = F)
   })
   

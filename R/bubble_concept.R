@@ -45,14 +45,16 @@ dat %>%
                       xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                       yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 
-plot_ly(data = dat,
+plot_ly() %>%
+  add_trace(
+    data = dat,
   type='treemap',
-  labels= ~inst,
+  labels= c("", dat$inst),
   parents="",
-  values= ~n,
-  color = ~n,
+  values= c("", dat$n),
+  color = c(1, dat$n),
   colors = "Greens",
-  textinfo="label") %>% 
+  textinfo="") %>% 
   layout(uniformtext=list(minsize=16, mode='hide'))
 
 df2 = read.csv('https://raw.githubusercontent.com/plotly/datasets/718417069ead87650b90472464c7565dc8c2cb1c/coffee-flavors.csv')
