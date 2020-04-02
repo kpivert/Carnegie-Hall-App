@@ -232,7 +232,7 @@ shinyServer(function(input, output, session) {
     p <- ggplot(rv$cont_dat, aes(birth_year)) +
       geom_histogram(aes(fill = ..count..), show.legend = FALSE) + 
       scale_x_continuous(limits = c(1800, NA)) +
-      theme_minimal(base_size = 18) +
+      theme_minimal() +
       labs(x = NULL, y = NULL)
     ggplotly(p) %>% 
       config(displayModeBar = F)
