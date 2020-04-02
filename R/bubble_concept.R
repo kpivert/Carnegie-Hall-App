@@ -38,13 +38,28 @@ ggplotly(p,
 plotly()
 
 dat %>%
-  
   plot_ly(labels = ~inst, values = ~n) %>%
   add_pie(hole = 0.6) %>%
   layout(title = "Donut charts using Plotly",  showlegend = F,
                       xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
                       yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE))
 
+df <- dat %>% 
+  select(inst, n) %>% 
+  mutate(parents = "") %>% 
+  bind_rows(
+    tibble(inst = "",
+               parents = "",
+               n = 1),
+    .
+  )
+
+plot_ly(
+  type='treemap',
+  values = df$n,
+  labels=df$inst,
+  parents="")
+  
 plot_ly() %>%
   add_trace(
     data = dat,

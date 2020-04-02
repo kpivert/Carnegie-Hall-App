@@ -2,7 +2,7 @@
 source("src.R")
 
 fluidPage(
-  theme = shinytheme("darkly"),
+  theme = shinytheme("paper"),
   tags$head(
     tags$style(HTML(".leaflet-container { background: #fff; }"))
   ),

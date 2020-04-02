@@ -65,6 +65,7 @@ ggTreemap <- function(dat, label) {
 }
 
 d3Treemap <- function(dat, label) {
+  
   m <- list(
     l = 0,
     r = 0,
@@ -79,20 +80,28 @@ d3Treemap <- function(dat, label) {
     showticklabels = FALSE,
     showgrid = FALSE
   )
-  
-  plot_ly(data = dat,
-          type='treemap',
-          labels= dat[[label]],
-          parents="",
-          values= ~n,
-          color = ~n,
-          colors = "Blues",
-          textinfo="label") %>% 
+  plot_ly(
+    type='treemap',
+    values = dat$n,
+    labels=dat[[label]],
+    parents="") %>% 
     layout(uniformtext=list(minsize=16, mode='hide'),
            margin = m,
-           xaxis= ax,yaxis=ax) %>% 
-    config(displayModeBar = F) %>% 
-    hide_colorbar()
+           xaxis= ax,yaxis=ax)
+  # 
+  # plot_ly(data = dat,
+  #         type='treemap',
+  #         labels= dat[[label]],
+  #         parents="",
+  #         values= ~n,
+  #         color = ~n,
+  #         colors = "Blues",
+  #         textinfo="label") %>% 
+  #   layout(uniformtext=list(minsize=16, mode='hide'),
+  #          margin = m,
+  #          xaxis= ax,yaxis=ax) %>% 
+  #   config(displayModeBar = F) %>% 
+  #   hide_colorbar()
 }
 
 # build a vector for leaflet::fitBounds
