@@ -126,7 +126,7 @@ shinyServer(function(input, output, session) {
     mapdeck(
       token = key) %>%
       add_arc(
-        data = as.data.frame(rv$cont_dat),
+        data = as.data.frame(dat),
         layer_id = "arc_layer3",
         origin = c("from_lon", "from_lat"),
         destination = c("to_lon", "to_lat"),
@@ -156,11 +156,14 @@ shinyServer(function(input, output, session) {
   output$choropleth <- renderMapdeck({
     
     mapdeck(
-      token = key
+      token = key,
+      pitch = 20
     ) %>% 
-      add_pointcloud(
-        data = as.data.frame(rv$cont_dat),
+      add_polygon(
+        data = choro_dat,
         layer = "polygon_layer",
+        fill_colour = "mapcolor13",
+        elevation = "n",
         tooltip = "tooltip"
       )
     
