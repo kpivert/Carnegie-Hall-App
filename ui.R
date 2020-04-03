@@ -2,7 +2,7 @@
 source("src.R")
 
 fluidPage(
-  theme = shinytheme("darkly"),
+  theme = shinytheme("paper"),
   tags$head(
     tags$style(HTML(".leaflet-container { background: #fff; }"))
   ),
@@ -59,16 +59,18 @@ fluidPage(
       br(),
       fluidRow(
         box(
-          title = "Instrument", width = 4,
-          plotOutput("instrument_tree", height = 200)
+          title = "Instrument", width = 6,
+          plotlyOutput("instrument_tree", height = 300)
           ),
         box(
-          title = "Birth year", width = 4,
-          plotOutput("time_hist", height = 200)
-          ),
+          title = "Role", width = 6,
+          plotlyOutput("role_tree", height = 300)
+        )
+      ),
+      fluidRow(
         box(
-          title = "Role", width = 4,
-          plotOutput("role_tree", height = 200)
+          title = "Birth year", width = 12,
+          plotlyOutput("time_hist", height = 200)
         )
       )
     )

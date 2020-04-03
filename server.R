@@ -123,14 +123,10 @@ shinyServer(function(input, output, session) {
   
   # initialize baseMap
   output$arcs <- renderMapdeck({
-    print(str(rv$cont_dat))
-    
     mapdeck(
-      token = key, 
-      style = mapdeck_style('dark')) %>%
+      token = key) %>%
       add_arc(
-        # data = as.data.frame(rv$cont_dat),
-        data = dat,
+        data = as.data.frame(dat),
         layer_id = "arc_layer3",
         origin = c("from_lon", "from_lat"),
         destination = c("to_lon", "to_lat"),
@@ -160,8 +156,7 @@ shinyServer(function(input, output, session) {
   output$choropleth <- renderMapdeck({
     
     mapdeck(
-      token = key, 
-      style = mapdeck_style("light"),
+      token = key,
       pitch = 20
     ) %>% 
       add_polygon(
@@ -228,20 +223,22 @@ shinyServer(function(input, output, session) {
   
   # Fluid Row Plots ---------------------------------------------------------
 
-  output$time_hist <- renderPlot({
-    ggplot(rv$cont_dat, aes(birth_year)) +
+  output$time_hist <- renderPlotly({
+    p <- ggplot(rv$cont_dat, aes(birth_year)) +
       geom_histogram(aes(fill = ..count..), show.legend = FALSE) + 
       scale_x_continuous(limits = c(1800, NA)) +
-      theme_minimal(base_size = 18) +
+      theme_minimal() +
       labs(x = NULL, y = NULL)
+    ggplotly(p, tooltip = c("fill", "x")) %>% 
+      config(displayModeBar = F)
   })
   
-  output$instrument_tree <- renderPlot({
-    ggTreemap(rv$instrument_counts, inst)
+  output$instrument_tree <- renderPlotly({
+    d3Treemap(rv$instrument_counts, "inst")
   })
   
-  output$role_tree <- renderPlot({
-    ggTreemap(rv$role_counts, role)
+  output$role_tree <- renderPlotly({
+    d3Treemap(rv$role_counts, "role")
   })
   
 })
